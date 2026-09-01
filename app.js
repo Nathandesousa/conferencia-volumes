@@ -15,7 +15,10 @@ var state = {
     config: { continuo: false, som: true, vibrar: true },
     wakeLock: null,
     emAndamento: false,
-    dupPendente: null
+    dupPendente: null,
+    codigoEspera: null,     // codigo da caixa escaneado aguardando o VOL ser digitado
+    codigos: {},            // vol -> codigo da caixa (registrados ok)
+    dupCodigos: {}          // vol -> codigo da caixa (repetidos)
 };
 
 var dbKEY = 'conferencia_historico';
@@ -161,6 +164,9 @@ function iniciar() {
     state.duplicados = [];
     state.semEtiqueta = 0;
     state.ultimoRegistro = null;
+    state.codigoEspera = null;
+    state.codigos = {};
+    state.dupCodigos = {};
     state.nf = formatarDataHora(new Date());
     state.emAndamento = true;
 
@@ -297,7 +303,7 @@ function formatarDataHora(d) {
 }
 
 /* ===== Registro de volume ===== */
-function registrar(entrada, isDupConfirm) {
+function registrar(entrada, isDupConfirm, codigo) {
     entrada = (entrada || '').trim();
     if (!entrada) return;
     var vol = parseInt(entrada);
@@ -306,10 +312,12 @@ function registrar(entrada, isDupConfirm) {
     if (vol < 1) { mostrarFeedback('Volume invalido: ' + vol, 'err'); somErro(); return; }
     if (entrada.length > 6) { mostrarFeedback('Esse parece ser o codigo da caixa. Digite o VOL.', 'err'); somErro(); return; }
     if (vol > state.total) { mostrarFeedback('Volume ' + vol + ' nao existe (max ' + state.total + ')', 'err'); somErro(); return; }
+    codigo = codigo || null;
 
     if (state.registrados[vol]) {
         if (isDupConfirm) {
             state.duplicados.push(vol);
+            if (codigo) state.dupCodigos[vol] = codigo;
             state.ultimoRegistro = { tipo: 'dup', vol: vol };
             fecharModalDup();
             atualizarGrade();
@@ -324,6 +332,7 @@ function registrar(entrada, isDupConfirm) {
     }
 
     state.registrados[vol] = true;
+    if (codigo) state.codigos[vol] = codigo;
     state.ultimoRegistro = { tipo: 'ok', vol: vol };
     atualizarGrade();
     atualizarContadores();
@@ -336,12 +345,31 @@ function registrar(entrada, isDupConfirm) {
     }
 }
 
+function processarEntrada(valor) {
+    valor = (valor || '').trim();
+    if (valor.length > 6) {
+        state.codigoEspera = valor;
+        ativarAlertaVol();
+        mostrarFeedback('Codigo da caixa (' + valor + ') lido. Digite o VOL.', 'dupOk');
+        somConfirma();
+        return;
+    }
+    if (valor === '') {
+        if (state.codigoEspera) { ativarAlertaVol(); mostrarFeedback('Codigo da caixa lido. Digite o VOL.', 'dupOk'); }
+        return;
+    }
+    registrar(valor, false, state.codigoEspera);
+    state.codigoEspera = null;
+    limparAlertaVol();
+}
+
 $('inputCodigo').addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.keyCode === 13) {
-        registrar($('inputCodigo').value, false);
+        processarEntrada($('inputCodigo').value);
         $('inputCodigo').value = '';
     }
 });
+$('inputCodigo').addEventListener('input', function () { limparAlertaVol(); });
 
 /* ===== Caixa sem etiqueta ===== */
 $('btnSemEtiqueta').addEventListener('click', function () { abrirModalSem(); });
@@ -386,10 +414,12 @@ $('btnDesfazer').addEventListener('click', function () {
     var u = state.ultimoRegistro;
     if (u.tipo === 'ok') {
         delete state.registrados[u.vol];
+        delete state.codigos[u.vol];
         mostrarFeedback('Desfeito: volume ' + u.vol, 'cancel');
     } else if (u.tipo === 'dup') {
         var i = state.duplicados.indexOf(u.vol);
         if (i !== -1) state.duplicados.splice(i, 1);
+        delete state.dupCodigos[u.vol];
         mostrarFeedback('Desfeito: repetido ' + u.vol, 'cancel');
     } else if (u.tipo === 'sem') {
         state.semEtiqueta = Math.max(0, state.semEtiqueta - 1);
@@ -441,19 +471,20 @@ function usarScan() {
 }
 
 function onDecoded(decoded) {
-    var num = parseInt(decoded);
-    if (isNaN(num)) {
-        mostrarFeedback('Codigo lido. Digite o VOL correspondente.', 'err');
-        somErro();
-        return;
-    }
-    if (num >= 1 && num <= state.total) {
-        registrar(String(num), false);
-    } else {
-        $('inputCodigo').value = decoded;
-        mostrarFeedback('Codigo da caixa. Digite o VOL.', 'err');
-        somErro();
-    }
+    processarEntrada(decoded);
+    $('inputCodigo').value = '';
+}
+
+function ativarAlertaVol(msg) {
+    var inp = $('inputCodigo');
+    inp.value = '';
+    inp.classList.add('input-alerta');
+    inp.placeholder = msg || 'Digite o VOL';
+}
+function limparAlertaVol() {
+    var inp = $('inputCodigo');
+    inp.classList.remove('input-alerta');
+    inp.placeholder = 'Digite o vol';
 }
 
 function pararScan() {
@@ -550,7 +581,8 @@ function finishConfirmation() {
     for (var k = 0; k < listaOk.length; k++) {
         var bo = document.createElement('span');
         bo.className = 'badge ok';
-        bo.textContent = 'Vol ' + listaOk[k];
+        var codOk = state.codigos[listaOk[k]] || '';
+        bo.textContent = 'Vol ' + listaOk[k] + (codOk ? ' (' + codOk + ')' : '');
         divOk.appendChild(bo);
     }
 
@@ -595,7 +627,8 @@ function reportDupFill() {
     for (var d = 0; d < state.duplicados.length; d++) {
         var bd = document.createElement('span');
         bd.className = 'badge dup';
-        bd.textContent = 'Vol ' + state.duplicados[d];
+        var codDup = state.dupCodigos[state.duplicados[d]] || '';
+        bd.textContent = 'Vol ' + state.duplicados[d] + (codDup ? ' (' + codDup + ')' : '');
         reportDup.appendChild(bd);
     }
 }
@@ -631,13 +664,21 @@ function exportarExcel() {
     linhas.push(['Repetidos', state.duplicados.length]);
     linhas.push(['Sem etiqueta', state.semEtiqueta]);
     linhas.push([]);
-    linhas.push(['VOLUME', 'STATUS']);
+    linhas.push(['VOLUME', 'CODIGO CAIXA', 'STATUS']);
     for (var i = 0; i < state.volumes.length; i++) {
         var vol = state.volumes[i];
         var status = state.registrados[vol] ? 'Registrado' : 'Faltando';
-        if (state.duplicados.indexOf(vol) !== -1) status = 'Repetido';
-        linhas.push([vol, status]);
+        var cod = '';
+        if (state.duplicados.indexOf(vol) !== -1) {
+            status = 'Repetido';
+            cod = state.dupCodigos[vol] || '';
+        } else if (state.registrados[vol]) {
+            cod = state.codigos[vol] || '';
+        }
+        linhas.push([vol, cod, status]);
     }
+    linhas.push([]);
+    linhas.push(['CAIXAS SEM ETIQUETA', state.semEtiqueta]);
 
     var csv = '\uFEFF';
     for (var r = 0; r < linhas.length; r++) {
