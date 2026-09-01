@@ -22,13 +22,6 @@ var screens = {
     historico: $('screen-historico')
 };
 
-/* ===== Logo ===== */
-function carregarLogo() {
-    var img = $('logoImg');
-    img.src = 'nicosia.jpg';
-    img.onerror = function () { img.style.display = 'none'; };
-}
-
 /* ===== Navegacao ===== */
 function showScreen(name) {
     var chaves = Object.keys(screens);
@@ -240,8 +233,7 @@ function pararScanUI() {
 /* ===== Voltar setup ===== */
 $('btnVoltar').addEventListener('click', function () {
     pararScan();
-showScreen('setup');
-carregarLogo();
+    showScreen('setup');
 });
 
 /* ===== Finalizar / Relatorio ===== */

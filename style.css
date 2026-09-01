@@ -450,13 +450,42 @@ h3 { color: var(--primary); margin: 10px 0 8px; font-size: 15px; }
 
 .modal-actions button {
     flex: 1;
-    padding: 13px;
+    padding: 16px;
     border: none;
-    border-radius: 10px;
-    font-size: 15px;
+    border-radius: 12px;
+    font-size: 16px;
     font-weight: 700;
     cursor: pointer;
 }
 
-.btn-confirm { background: var(--warn); color: #fff; }
-.btn-cancel { background: #e2e9e9; color: var(--primary); }
+.btn-confirm {
+    background: linear-gradient(135deg, var(--warn) 0%, #e9a23b 100%);
+    color: #fff;
+    width: 100%;
+    padding: 18px;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 5px 14px rgba(217,139,43,0.35);
+    letter-spacing: 0.3px;
+    margin-bottom: 12px;
+}
+
+.btn-confirm:active { transform: scale(0.97); opacity: 0.92; }
+
+.btn-cancel {
+    background: #f0f4f4;
+    color: var(--primary);
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 2px solid #e0e8e8;
+}
+
+.btn-cancel:active { background: #e4ecec; }
