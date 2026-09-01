@@ -114,6 +114,9 @@
             <div class="stat dup"><span id="statDup">0</span><small>Repetidos</small></div>
         </div>
 
+        <div id="avisoSemEtiqueta" class="aviso-sem hidden"></div>
+        <div id="avisoExcesso" class="aviso-excesso hidden"></div>
+
         <div id="grid" class="grid"></div>
 
         <div style="height:12px"></div>
@@ -126,11 +129,13 @@
             <h1>Relatorio Final</h1>
             <div id="reportNf" class="nf-line"></div>
             <div id="reportSummary" class="summary"></div>
+            <div id="reportExcesso" class="aviso-excesso" style="display:none"></div>
 
             <h3>Volumes Faltando</h3>
             <div id="reportFalta" class="report-list"></div>
 
             <h3>Caixas sem etiqueta</h3>
+            <div id="reportSemAviso" class="aviso-sem-aviso"></div>
             <div id="reportSem" class="report-list"></div>
 
             <h3>Volumes Repetidos</h3>
@@ -140,9 +145,7 @@
             <div id="reportOk" class="report-list"></div>
 
             <div class="report-actions">
-                <button id="btnExportar" class="btn-primary">Baixar Relatorio (TXT)</button>
                 <button id="btnExcel" class="btn-excel">Exportar Excel (Planilha)</button>
-                <button id="btnCompartilhar" class="btn-compartilhar">Compartilhar</button>
                 <button id="btnSalvarHist" class="btn-primary" style="margin-top:10px">Salvar no Historico</button>
                 <button id="btnNova" class="btn-secondary">Nova Conferencia</button>
             </div>

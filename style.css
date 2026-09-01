@@ -587,3 +587,43 @@ h3 { color: var(--primary); margin: 10px 0 8px; font-size: 15px; }
 .feedback.dupOk { background: var(--warn-bg); color: var(--warn); border: 1px solid #f0d9b0; }
 .feedback.cancel { background: #eef2f2; color: var(--text-muted); border: 1px solid #d9e2e2; }
 .report-list { margin-bottom: 12px; }
+
+/* ===== Aviso de deducao da caixa sem etiqueta ===== */
+.aviso-sem {
+    background: linear-gradient(135deg, #e8f5ec, #d7efe0);
+    border: 1.5px solid #b5ddc2;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 12px 0;
+    font-size: 15px;
+    color: var(--success);
+    font-weight: 600;
+}
+.aviso-sem strong { color: #155e3b; font-size: 17px; }
+.aviso-sem.hidden { display: none; }
+.aviso-sem-aviso {
+    background: #eef7f1;
+    border: 1px solid #cde8d6;
+    border-left: 4px solid var(--success);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #155e3b;
+    line-height: 1.5;
+}
+.aviso-sem-aviso strong { font-weight: 800; }
+
+/* ===== Aviso de caixa a mais ===== */
+.aviso-excesso {
+    background: linear-gradient(135deg, #fdf1e0, #fbebd2);
+    border: 1.5px solid #f0d9b0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 12px 0;
+    font-size: 15px;
+    color: var(--warn);
+    font-weight: 700;
+}
+.aviso-excesso strong { color: #b07314; font-size: 17px; }
+.aviso-excesso.hidden { display: none; }

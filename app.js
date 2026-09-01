@@ -195,14 +195,74 @@ function atualizarGrade() {
 
 function atualizarContadores() {
     var ok = Object.keys(state.registrados).length;
-    var falta = state.total - ok;
+    var faltantes = calcularFaltantes();
+    var faltaReal = faltantes.length - state.semEtiqueta;
+    if (faltaReal < 0) faltaReal = 0;
     $('progressCount').textContent = ok;
     $('statOk').textContent = ok;
-    $('statFalta').textContent = falta;
+    $('statFalta').textContent = faltaReal;
     $('statSem').textContent = state.semEtiqueta;
     $('statDup').textContent = state.duplicados.length;
     var pct = state.total > 0 ? (ok / state.total * 100) : 0;
     $('progressFill').style.width = pct + '%';
+    atualizarAvisoSemEtiqueta();
+    atualizarAvisoExcesso();
+}
+
+/* ===== Deduzir caixa(s) sem etiqueta ===== */
+function calcularFaltantes() {
+    var falta = [];
+    for (var i = 0; i < state.volumes.length; i++) {
+        if (!state.registrados[state.volumes[i]]) falta.push(state.volumes[i]);
+    }
+    return falta;
+}
+function faltantesReais() {
+    var faltantes = calcularFaltantes();
+    var cobertos = state.semEtiqueta + state.duplicados.length;
+    var rest = faltantes.length - cobertos;
+    return rest > 0 ? rest : 0;
+}
+function excessoCaixas() {
+    var faltantes = calcularFaltantes();
+    var cobertos = state.semEtiqueta + state.duplicados.length;
+    var ex = cobertos - faltantes.length;
+    return ex > 0 ? ex : 0;
+}
+function atualizarAvisoExcesso() {
+    var el = $('avisoExcesso');
+    if (!el) return;
+    var ex = excessoCaixas();
+    if (ex === 0) { el.classList.add('hidden'); return; }
+    el.innerHTML = 'Atencao: tem <strong>' + ex + '</strong> caixa(s) a mais! (nada faltando para cobrir)';
+    el.classList.remove('hidden');
+}
+function atualizarAvisoSemEtiqueta() {
+    var el = $('avisoSemEtiqueta');
+    if (!el) return;
+    var sem = state.semEtiqueta;
+    var dups = state.duplicados.length;
+    var faltantes = calcularFaltantes();
+    var cobertos = sem + dups;
+    if (sem === 0 || faltantes.length === 0) { el.classList.add('hidden'); return; }
+    if (cobertos >= faltantes.length) {
+        var listaCobertos = [];
+        for (var i2 = 0; i2 < faltantes.length; i2++) listaCobertos.push(faltantes[i2]);
+        var extra = '';
+        if (dups > 0) extra = ' (incluindo os <strong>' + dups + '</strong> repetido(s))';
+        el.innerHTML = 'Completo! Os volumes que faltavam foram cobertos pelas sem etiqueta e/ou repetidos: <strong>' + listaCobertos.join(', ') + '</strong>' + extra;
+        el.classList.remove('hidden');
+        return;
+    }
+    if (sem > faltantes.length) { el.classList.add('hidden'); return; }
+    var texto;
+    if (sem === 1) {
+        texto = 'A caixa sem etiqueta e a volume <strong>' + faltantes[0] + '</strong>';
+    } else {
+        texto = 'As caixas sem etiqueta podem ser as volumes: <strong>' + faltantes.join(', ') + '</strong>';
+    }
+    el.innerHTML = texto;
+    el.classList.remove('hidden');
 }
 
 function mostrarFeedback(msg, tipo) {
@@ -408,8 +468,7 @@ $('btnVoltar').addEventListener('click', function () {
 $('btnFinalizar').addEventListener('click', function () { prepararFinalizar(); });
 
 function prepararFinalizar() {
-    var ok = Object.keys(state.registrados).length;
-    var falta = state.total - ok;
+    var falta = faltantesReais();
     if (falta > 0) {
         $('modalFinMsg').textContent = 'Ainda faltam ' + falta + ' volumes. Deseja finalizar mesmo assim?';
         $('modalFin').classList.add('active');
@@ -429,18 +488,18 @@ function finishConfirmation() {
     soltarWakeLock();
     state.emAndamento = false;
     var ok = Object.keys(state.registrados).length;
-    var falta = state.total - ok;
     var listaFalta = [];
     var listaOk = [];
     for (var i = 0; i < state.volumes.length; i++) {
         var v = state.volumes[i];
         if (state.registrados[v]) listaOk.push(v); else listaFalta.push(v);
     }
+    var faltaReal = faltantesReais();
 
     $('reportNf').textContent = 'Conferencia de ' + formatarDataHora(new Date());
-    $('reportSummary').innerHTML = falta === 0
-        ? '<strong>Sucesso!</strong><br>Todos os <strong>' + state.total + '</strong> volumes foram registrados.'
-        : 'Registrados: <strong>' + ok + '</strong> de ' + state.total + '<br>Faltando: <strong style="color:#d64545">' + falta + '</strong> volumes<br>Repetidos: <strong>' + state.duplicados.length + '</strong>';
+    $('reportSummary').innerHTML = faltaReal === 0
+        ? '<strong>Sucesso!</strong><br>Todos os <strong>' + state.total + '</strong> volumes conferidos (' + state.semEtiqueta + ' sem etiqueta).'
+        : 'Registrados: <strong>' + ok + '</strong> de ' + state.total + '<br>Faltando: <strong style="color:#d64545">' + faltaReal + '</strong> volumes<br>Sem etiqueta: <strong>' + state.semEtiqueta + '</strong><br>Repetidos: <strong>' + state.duplicados.length + '</strong>';
 
     var divFalta = $('reportFalta');
     var divOk = $('reportOk');
@@ -449,13 +508,14 @@ function finishConfirmation() {
     divOk.innerHTML = '';
     divSem.innerHTML = '';
 
-    if (!listaFalta.length) {
+    if (faltaReal === 0) {
         divFalta.innerHTML = '<span class="badge ok">Nenhum faltando</span>';
     } else {
-        for (var j = 0; j < listaFalta.length; j++) {
+        var faltasReais = montarFalta();
+        for (var j = 0; j < faltasReais.length; j++) {
             var b = document.createElement('span');
             b.className = 'badge';
-            b.textContent = 'Vol ' + listaFalta[j];
+            b.textContent = 'Vol ' + faltasReais[j];
             divFalta.appendChild(b);
         }
     }
@@ -478,9 +538,35 @@ function finishConfirmation() {
         divOk.appendChild(bo);
     }
 
+    reportSemAvisoFill();
     reportDupFill();
+    reportExcessoFill();
 
     showScreen('report');
+}
+
+function reportSemAvisoFill() {
+    var el = $('reportSemAviso');
+    var sem = state.semEtiqueta;
+    var dups = state.duplicados.length;
+    var faltantes = calcularFaltantes();
+    var cobertos = sem + dups;
+    if (sem === 0) { el.innerHTML = ''; return; }
+    if (cobertos >= faltantes.length && faltantes.length > 0) {
+        var extra = '';
+        if (dups > 0) extra = ' (incluindo ' + dups + ' repetido(s))';
+        el.innerHTML = 'Completo: os volumes que faltavam foram cobertos pelas sem etiqueta e/ou repetidos: <strong>' + faltantes.join(', ') + '</strong>' + extra + '.';
+        return;
+    }
+    if (sem > faltantes.length) {
+        el.innerHTML = '<strong>' + sem + '</strong> caixas sem etiqueta: nao da para deduzir quais sao (mais sem etiqueta que volumes faltando).';
+        return;
+    }
+    if (sem === 1) {
+        el.innerHTML = 'A caixa sem etiqueta e o volume <strong>' + faltantes[0] + '</strong>.';
+    } else {
+        el.innerHTML = 'As <strong>' + sem + '</strong> caixas sem etiqueta podem ser as volumes: <strong>' + faltantes.join(', ') + '</strong> (nao da para dizer qual e qual).';
+    }
 }
 
 function reportDupFill() {
@@ -498,38 +584,19 @@ function reportDupFill() {
     }
 }
 
-/* ===== Exportar TXT ===== */
-$('btnExportar').addEventListener('click', exportarTXT);
-
-function montarFalta() {
-    var falta = [];
-    for (var i = 0; i < state.volumes.length; i++) if (!state.registrados[state.volumes[i]]) falta.push(state.volumes[i]);
-    return falta;
+function reportExcessoFill() {
+    var el = $('reportExcesso');
+    var ex = excessoCaixas();
+    if (ex === 0) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    el.innerHTML = 'Atencao: <strong>' + ex + '</strong> caixa(s) a mais foram recebidas (nao ha volume faltando para cobrir). Verifique se nao veio caixa trocada ou de outra nota.';
 }
 
-function exportarTXT() {
-    var falta = montarFalta();
-    var ok = Object.keys(state.registrados).length;
-
-    var txt = '=== RELATORIO DE CONFERENCIA ===\n';
-    txt += 'NF: ' + state.nf + '\n';
-    txt += 'Data: ' + new Date().toLocaleString() + '\n';
-    txt += 'Total: ' + state.total + '\n';
-    txt += 'Registrados: ' + ok + '\n';
-    txt += 'Faltando: ' + falta.length + '\n';
-    txt += 'Repetidos: ' + state.duplicados.length + '\n';
-    txt += 'Sem etiqueta: ' + state.semEtiqueta + '\n\n';
-    txt += 'VOLUMES FALTANDO:\n' + (falta.join(', ') || 'Nenhum') + '\n\n';
-    txt += 'VOLUMES REPETIDOS:\n' + (state.duplicados.join(', ') || 'Nenhum') + '\n\n';
-    txt += 'SEM ETIQUETA: ' + state.semEtiqueta + '\n';
-
-    var blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
-    var link = document.createElement('a');
-    var nome = state.nf.replace(/[\/:]/g, '-').replace(/\s+/g, '_');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'conferencia_' + nome + '.txt';
-    link.click();
-    URL.revokeObjectURL(link.href);
+function montarFalta() {
+    var falta = calcularFaltantes();
+    var cobertos = state.semEtiqueta + state.duplicados.length;
+    if (cobertos >= falta.length) return [];
+    return falta.slice(cobertos);
 }
 
 /* ===== Exportar Excel (CSV) ===== */
@@ -576,28 +643,6 @@ function exportarExcel() {
     URL.revokeObjectURL(link.href);
 }
 
-/* ===== Compartilhar ===== */
-$('btnCompartilhar').addEventListener('click', compartilhar);
-
-function compartilhar() {
-    var falta = montarFalta();
-    var ok = Object.keys(state.registrados).length;
-    var texto = 'CONFERENCIA DE VOLUMES\n';
-    texto += 'NF: ' + state.nf + '\n';
-    texto += 'Total: ' + state.total + '\n';
-    texto += 'Registrados: ' + ok + '\n';
-    texto += 'Faltando: ' + falta.length + '\n';
-    texto += 'Repetidos: ' + state.duplicados.length + '\n';
-    texto += 'Sem etiqueta: ' + state.semEtiqueta + '\n\n';
-    texto += 'FALTANDO: ' + (falta.join(', ') || 'Nenhum') + '\n';
-
-    if (navigator.share) {
-        navigator.share({ title: 'Conferencia de Volumes', text: texto }).catch(function () {});
-    } else {
-        exportarTXT();
-    }
-}
-
 /* ===== Historico (localStorage) ===== */
 var HIST_KEY = 'conf_hist_v2';
 
@@ -610,9 +655,8 @@ function carregarHistorico() {
 
 function salvarNoHistorico() {
     var ok = Object.keys(state.registrados).length;
-    var falta = state.total - ok;
-    var faltaLista = []; var dupLista = state.duplicados.slice();
-    for (var i = 0; i < state.volumes.length; i++) if (!state.registrados[state.volumes[i]]) faltaLista.push(state.volumes[i]);
+    var falta = faltantesReais();
+    var faltaLista = montarFalta(); var dupLista = state.duplicados.slice();
 
     var item = {
         nf: state.nf,
