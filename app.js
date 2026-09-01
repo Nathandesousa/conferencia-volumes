@@ -109,6 +109,22 @@ $('cfgVibrar').addEventListener('change', function () { state.config.vibrar = th
 $('btnConfig').addEventListener('click', function () { showScreen('config'); });
 $('btnVoltarConfig').addEventListener('click', function () { showScreen('setup'); });
 
+(function tornarLinhasConfigClicaveis() {
+    var linhas = document.querySelectorAll('#screen-config .config-row');
+    for (var i = 0; i < linhas.length; i++) {
+        (function (linha) {
+            var checkbox = linha.querySelector('input[type="checkbox"]');
+            if (!checkbox) return;
+            linha.addEventListener('click', function (e) {
+                if (e.target === checkbox || e.target.classList.contains('slider')) return;
+                checkbox.checked = !checkbox.checked;
+                var ev = new Event('change', { bubbles: true });
+                checkbox.dispatchEvent(ev);
+            });
+        })(linhas[i]);
+    }
+})();
+
 /* ===== Setup / resumo ===== */
 $('numNotas').addEventListener('input', atualizarResumo);
 $('volsNota').addEventListener('input', atualizarResumo);

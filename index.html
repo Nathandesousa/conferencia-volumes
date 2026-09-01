@@ -54,14 +54,14 @@
                     <div class="label">Continuo</div>
                     <div class="desc">Camera fica aberta registrando varias caixas seguidas</div>
                 </div>
-                <div class="switch"><input type="checkbox" id="cfgContinuo"><span class="slider"></span></div>
+                <div class="switch"><input type="checkbox" id="cfgContinuo"><label class="slider" for="cfgContinuo"></label></div>
             </div>
             <div class="config-row">
                 <div>
                     <div class="label">Som de confirmacao</div>
                     <div class="desc">Beep ao registrar e ao detectar erro</div>
                 </div>
-                <div class="switch"><input type="checkbox" id="cfgSom"><span class="slider"></span></div>
+                <div class="switch"><input type="checkbox" id="cfgSom"><label class="slider" for="cfgSom"></label></div>
             </div>
         </div>
         <div class="config-group">
@@ -71,7 +71,7 @@
                     <div class="label">Vibrar no registro</div>
                     <div class="desc">Vibracao ao registrar um volume</div>
                 </div>
-                <div class="switch"><input type="checkbox" id="cfgVibrar"><span class="slider"></span></div>
+                <div class="switch"><input type="checkbox" id="cfgVibrar"><label class="slider" for="cfgVibrar"></label></div>
             </div>
         </div>
     </section>
@@ -101,8 +101,8 @@
         <div id="scanArea" class="scan-area hidden"></div>
 
         <div class="extra-actions">
-            <button id="btnSemEtiqueta" class="btn-sem-etiqueta">Caixa sem etiqueta</button>
-            <button id="btnDesfazer" class="btn-sem-etiqueta" style="margin-top:8px">Desfazer ultimo</button>
+            <button id="btnSemEtiqueta" class="btn-sem-etiqueta">Caixa sem<br>etiqueta</button>
+            <button id="btnDesfazer" class="btn-sem-etiqueta btn-desfazer">Desfazer<br>ultimo</button>
         </div>
 
         <div id="feedback" class="feedback"></div>

@@ -254,7 +254,7 @@ body {
 
 .btn-sem-etiqueta {
     flex: 1;
-    padding: 13px;
+    padding: 13px 8px;
     background: var(--warn-bg);
     border: 2px dashed var(--warn);
     color: var(--warn);
@@ -262,6 +262,11 @@ body {
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
+    min-height: 52px;
+    line-height: 1.25;
+    text-align: center;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .btn-sem-etiqueta:active { background: #fbe6c8; }
@@ -627,3 +632,31 @@ h3 { color: var(--primary); margin: 10px 0 8px; font-size: 15px; }
 }
 .aviso-excesso strong { color: #b07314; font-size: 17px; }
 .aviso-excesso.hidden { display: none; }
+
+/* ===== Melhorias mobile / toque ===== */
+html { -webkit-text-size-adjust: 100%; }
+body { overscroll-behavior-y: contain; }
+
+input, button, select, textarea { font-size: 16px; }
+
+button { touch-action: manipulation; min-height: 44px; }
+
+.btn-primary, .btn-secondary, .btn-excel, .btn-confirm, .btn-cancel { min-height: 48px; }
+
+.stats { gap: 8px; }
+.stat { padding: 10px 4px; }
+.stat span { font-size: 22px; }
+.stat small { font-size: 11px; line-height: 1.2; }
+
+.grid { gap: 5px; padding: 10px; min-height: 120px; }
+.cell { font-size: 12px; }
+
+.input-area input { min-height: 52px; }
+
+/* Tela configuracoes: padding e legibilidade */
+#screen-config > .config-group { padding: 16px 14px; }
+.config-row { padding: 12px 0; }
+.config-row .label { font-size: 15px; }
+.switch { flex-shrink: 0; margin-left: 12px; }
+
+.scan-area video { border-radius: 12px; }
