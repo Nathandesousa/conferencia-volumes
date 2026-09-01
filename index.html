@@ -35,6 +35,44 @@
             <button id="btnIniciar" class="btn-primary">Iniciar Conferencia</button>
 
             <button id="btnVerHistorico" class="btn-secondary">Historico de conferencias</button>
+            <button id="btnConfig" class="btn-secondary">Configuracoes</button>
+        </div>
+    </section>
+
+    <!-- ===== CONFIGURACOES ===== -->
+    <section id="screen-config" class="screen">
+        <header class="topbar">
+            <div>
+                <button id="btnVoltarConfig" class="btn-icon" title="Voltar">&lt;</button>
+                <span class="topbar-title">Configuracoes</span>
+            </div>
+        </header>
+        <div class="config-group">
+            <h3>Escaneamento</h3>
+            <div class="config-row">
+                <div>
+                    <div class="label">Continuo</div>
+                    <div class="desc">Camera fica aberta registrando varias caixas seguidas</div>
+                </div>
+                <div class="switch"><input type="checkbox" id="cfgContinuo"><span class="slider"></span></div>
+            </div>
+            <div class="config-row">
+                <div>
+                    <div class="label">Som de confirmacao</div>
+                    <div class="desc">Beep ao registrar e ao detectar erro</div>
+                </div>
+                <div class="switch"><input type="checkbox" id="cfgSom"><span class="slider"></span></div>
+            </div>
+        </div>
+        <div class="config-group">
+            <h3>Vibracao</h3>
+            <div class="config-row">
+                <div>
+                    <div class="label">Vibrar no registro</div>
+                    <div class="desc">Vibracao ao registrar um volume</div>
+                </div>
+                <div class="switch"><input type="checkbox" id="cfgVibrar"><span class="slider"></span></div>
+            </div>
         </div>
     </section>
 
@@ -64,6 +102,7 @@
 
         <div class="extra-actions">
             <button id="btnSemEtiqueta" class="btn-sem-etiqueta">Caixa sem etiqueta</button>
+            <button id="btnDesfazer" class="btn-sem-etiqueta" style="margin-top:8px">Desfazer ultimo</button>
         </div>
 
         <div id="feedback" class="feedback"></div>
@@ -72,10 +111,12 @@
             <div class="stat ok"><span id="statOk">0</span><small>Registrados</small></div>
             <div class="stat falta"><span id="statFalta">0</span><small>Faltando</small></div>
             <div class="stat sem"><span id="statSem">0</span><small>Sem etiqueta</small></div>
+            <div class="stat dup"><span id="statDup">0</span><small>Repetidos</small></div>
         </div>
 
         <div id="grid" class="grid"></div>
 
+        <div style="height:12px"></div>
         <button id="btnFinalizar" class="btn-primary">Finalizar e Salvar</button>
     </section>
 
@@ -92,11 +133,16 @@
             <h3>Caixas sem etiqueta</h3>
             <div id="reportSem" class="report-list"></div>
 
+            <h3>Volumes Repetidos</h3>
+            <div id="reportDup" class="report-list"></div>
+
             <h3>Volumes Registrados</h3>
             <div id="reportOk" class="report-list"></div>
 
             <div class="report-actions">
                 <button id="btnExportar" class="btn-primary">Baixar Relatorio (TXT)</button>
+                <button id="btnExcel" class="btn-excel">Exportar Excel (Planilha)</button>
+                <button id="btnCompartilhar" class="btn-compartilhar">Compartilhar</button>
                 <button id="btnSalvarHist" class="btn-primary" style="margin-top:10px">Salvar no Historico</button>
                 <button id="btnNova" class="btn-secondary">Nova Conferencia</button>
             </div>
@@ -121,6 +167,28 @@
             <p>Confirma que esta caixa nao tem etiqueta legivel? Ela sera registrada separado, sem numero de volume.</p>
             <button id="btnModalConfirm" class="btn-confirm">Registrar caixa</button>
             <button id="btnModalCancel" class="btn-cancel">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- ===== MODAL VOLUME REPETIDO ===== -->
+    <div id="modalDup" class="modal-overlay">
+        <div class="modal">
+            <h2>Volume repetido</h2>
+            <p id="modalDupMsg">Este volume ja foi registrado. Registrar novamente (duplicado)?</p>
+            <button id="btnDupConfirm" class="btn-confirm">Registrar duplicado</button>
+            <button id="btnDupCancel" class="btn-cancel">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- ===== MODAL CONFIRMAR FINALIZAR ===== -->
+    <div id="modalFin" class="modal-overlay">
+        <div class="modal">
+            <h2>Finalizar conferencia?</h2>
+            <p id="modalFinMsg">Ainda faltam volumes. Deseja finalizar mesmo assim?</p>
+            <div class="modal-actions">
+                <button id="btnFinConfirm" class="btn-confirm">Sim, finalizar</button>
+                <button id="btnFinCancel" class="btn-cancel">Voltar</button>
+            </div>
         </div>
     </div>
 
