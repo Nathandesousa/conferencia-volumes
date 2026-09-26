@@ -264,7 +264,10 @@ function montarGrade() {
                 cell.textContent = vol;
                 cell.addEventListener('click', function () {
                     var k = chave(nota, vol);
-                    if (!state.registrados[k] && state.duplicados.indexOf(k) === -1) return;
+                    if (!state.registrados[k] && state.duplicados.indexOf(k) === -1) {
+                        registrar(nota, vol, false);
+                        return;
+                    }
                     removerVolume(nota, vol);
                 });
                 grid.appendChild(cell);

@@ -358,6 +358,7 @@ body {
     border-radius: 8px;
     background: #eef2f2;
     color: var(--primary);
+    cursor: pointer;
 }
 
 .cell.ok {
