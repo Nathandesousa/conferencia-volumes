@@ -11,7 +11,7 @@ var state = {
     wakeLock: null,
     emAndamento: false,
     dupPendente: null,    // "nota:vol"
-    notaPendente: null    // vol aguardando escolha da nota
+    confirmaPendente: null    // "nota:vol" aguardando confirmacao do toque
 };
 
 /* Identificador unico de um volume: "nota:vol", ex: "2:3" = Nota 2, Vol 3 */
@@ -225,7 +225,7 @@ function iniciar() {
     state.semEtiqueta = 0;
     state.ultimoRegistro = null;
     state.dupPendente = null;
-    state.notaPendente = null;
+    state.confirmaPendente = null;
     state.nf = formatarDataHora(new Date());
     state.emAndamento = true;
 
@@ -235,10 +235,8 @@ function iniciar() {
     limparGradeCores();
 
     $('nfBadge').textContent = state.nf;
-    $('inputCodigo').value = '';
     showScreen('conferencia');
     $('progressTotal').textContent = state.total;
-    $('inputCodigo').focus();
     pedirWakeLock();
 }
 
@@ -262,13 +260,31 @@ function montarGrade() {
                 cell.dataset.nota = nota;
                 cell.dataset.vol = vol;
                 cell.textContent = vol;
+                var timerLongo = null;
+                var foiLongo = false;
+                function iniciarLongo() {
+                    foiLongo = false;
+                    cancelarLongo();
+                    timerLongo = setTimeout(function () {
+                        foiLongo = true;
+                        timerLongo = null;
+                        removerVolume(nota, vol);
+                    }, 550);
+                }
+                function cancelarLongo() {
+                    if (timerLongo) { clearTimeout(timerLongo); timerLongo = null; }
+                }
+                cell.addEventListener('touchstart', iniciarLongo);
+                cell.addEventListener('touchend', cancelarLongo);
+                cell.addEventListener('touchmove', cancelarLongo);
+                cell.addEventListener('touchcancel', cancelarLongo);
+                cell.addEventListener('mousedown', iniciarLongo);
+                cell.addEventListener('mouseup', cancelarLongo);
+                cell.addEventListener('mouseleave', cancelarLongo);
+                cell.addEventListener('contextmenu', function (e) { if (e.preventDefault) e.preventDefault(); });
                 cell.addEventListener('click', function () {
-                    var k = chave(nota, vol);
-                    if (!state.registrados[k] && state.duplicados.indexOf(k) === -1) {
-                        registrar(nota, vol, false);
-                        return;
-                    }
-                    removerVolume(nota, vol);
+                    if (foiLongo) { foiLongo = false; return; }
+                    tocarRegistrar(nota, vol);
                 });
                 grid.appendChild(cell);
             })(n + 1, w);
@@ -393,62 +409,33 @@ function registrar(nota, vol, isDupConfirm) {
     }
 }
 
-function processarEntrada(valor) {
-    valor = (valor || '').trim();
-    var vol = parseInt(valor);
-    if (isNaN(vol) || vol < 1) { mostrarFeedback('Digite o numero do volume', 'err'); somErro(); return; }
-    var candidatas = [];
-    for (var n = 0; n < state.notas.length; n++) {
-        if (vol <= state.notas[n]) candidatas.push(n + 1);
+/* ===== Toque na grade: registra, duplica ou exclui ===== */
+function tocarRegistrar(nota, vol) {
+    var k = chave(nota, vol);
+    if (state.registrados[k] || state.duplicados.indexOf(k) !== -1) {
+        abrirModalDup(nota, vol);
+        return;
     }
-    if (!candidatas.length) { mostrarFeedback('Volume ' + vol + ' nao existe em nenhuma nota', 'err'); somErro(); return; }
-    if (candidatas.length === 1) {
-        registrar(candidatas[0], vol, false);
-    } else {
-        abrirModalNota(vol, candidatas);
-    }
+    abrirModalConfirma(nota, vol);
 }
 
-/* ===== Escolha da nota (volume existe em mais de uma) ===== */
-function abrirModalNota(vol, candidatas) {
-    state.notaPendente = vol;
-    $('modalNotaMsg').textContent = 'O volume ' + vol + ' existe em ' + candidatas.length + ' notas. De qual nota ele e?';
-    var box = $('modalNotaBtns');
-    box.innerHTML = '';
-    for (var i = 0; i < candidatas.length; i++) {
-        (function (nota) {
-            var b = document.createElement('button');
-            b.className = 'btn-confirm';
-            b.textContent = 'Nota ' + nota + ' (' + state.notas[nota - 1] + ' volumes)';
-            b.addEventListener('click', function () {
-                $('modalNota').classList.remove('active');
-                state.notaPendente = null;
-                registrar(nota, vol, false);
-                $('inputCodigo').value = '';
-                $('inputCodigo').focus();
-            });
-            box.appendChild(b);
-        })(candidatas[i]);
-    }
-    $('modalNota').classList.add('active');
-    somDup();
+function abrirModalConfirma(nota, vol) {
+    state.confirmaPendente = chave(nota, vol);
+    $('modalConfirmaMsg').textContent = 'Registrar o volume ' + vol + ' da Nota ' + nota + '?';
+    $('modalConfirma').classList.add('active');
+    somConfirma();
 }
-$('btnNotaCancel').addEventListener('click', function () {
-    $('modalNota').classList.remove('active');
-    state.notaPendente = null;
-    mostrarFeedback('Registro cancelado', 'cancel');
+$('btnConfirmaCancel').addEventListener('click', function () {
+    $('modalConfirma').classList.remove('active');
+    state.confirmaPendente = null;
 });
-
-$('inputCodigo').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.keyCode === 13) {
-        processarEntrada($('inputCodigo').value);
-        $('inputCodigo').value = '';
+$('btnConfirmaOk').addEventListener('click', function () {
+    if (state.confirmaPendente !== null) {
+        var p = String(state.confirmaPendente).split(':');
+        $('modalConfirma').classList.remove('active');
+        state.confirmaPendente = null;
+        registrar(parseInt(p[0]), parseInt(p[1]), false);
     }
-});
-$('btnConfirmar').addEventListener('click', function () {
-    processarEntrada($('inputCodigo').value);
-    $('inputCodigo').value = '';
-    $('inputCodigo').focus();
 });
 
 /* ===== Caixa sem etiqueta ===== */

@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-title" content="Conferencia">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="nicosia.jpg">
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 
@@ -35,7 +35,7 @@
 
             <div class="summary" id="setupSummary"></div>
 
-            <p class="versao">versao 9</p>
+            <p class="versao">versao 10</p>
 
             <button id="btnIniciar" class="btn-primary">Iniciar Conferencia</button>
 
@@ -92,18 +92,13 @@
 
         <div class="progressbar"><div id="progressFill"></div></div>
 
-        <div class="input-area">
-            <input type="number" id="inputCodigo" placeholder="Digite o numero do volume" inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" min="1" step="1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-            <button id="btnConfirmar" class="btn-confirmar" type="button">Confirmar</button>
-        </div>
-
         <div class="extra-actions">
             <button id="btnSemEtiqueta" class="btn-sem-etiqueta">Caixa sem<br>etiqueta</button>
             <button id="btnDesfazer" class="btn-sem-etiqueta btn-desfazer">Desfazer<br>ultimo</button>
         </div>
 
         <div id="feedback" class="feedback"></div>
-        <p class="grid-hint">Toque no numero para registrar. Toque de novo para remover.</p>
+        <p class="grid-hint">Toque para registrar, toque de novo para duplicar, segure para excluir.</p>
 
         <div class="stats">
             <div class="stat ok"><span id="statOk">0</span><small>Registrados</small></div>
@@ -170,13 +165,13 @@
         </div>
     </div>
 
-    <!-- ===== MODAL ESCOLHA DA NOTA ===== -->
-    <div id="modalNota" class="modal-overlay">
+    <!-- ===== MODAL CONFIRMAR REGISTRO ===== -->
+    <div id="modalConfirma" class="modal-overlay">
         <div class="modal">
-            <h2>De qual nota?</h2>
-            <p id="modalNotaMsg">O volume existe em mais de uma nota.</p>
-            <div id="modalNotaBtns"></div>
-            <button id="btnNotaCancel" class="btn-cancel">Cancelar</button>
+            <h2>Confirmar volume?</h2>
+            <p id="modalConfirmaMsg">Registrar este volume?</p>
+            <button id="btnConfirmaOk" class="btn-confirm">Confirmar</button>
+            <button id="btnConfirmaCancel" class="btn-cancel">Cancelar</button>
         </div>
     </div>
 
@@ -202,6 +197,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=9"></script>
+    <script src="app.js?v=10"></script>
 </body>
 </html>
