@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Conferencia de Volumes</title>
     <meta name="theme-color" content="#1f3d3d">
-    <link rel="stylesheet" href="style.css?v=7">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Conferencia">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="nicosia.jpg">
+    <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 
@@ -22,14 +28,14 @@
         <div class="card">
             <div class="field">
                 <label for="numNotas">Quantidade de notas (NF)</label>
-                <input type="number" id="numNotas" min="1" max="50" placeholder="Ex: 2" inputmode="numeric">
+                <input type="number" id="numNotas" min="1" max="50" placeholder="Ex: 2" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" autocomplete="off">
             </div>
 
             <div id="notasLista"></div>
 
             <div class="summary" id="setupSummary"></div>
 
-            <p class="versao">versao 7</p>
+            <p class="versao">versao 8</p>
 
             <button id="btnIniciar" class="btn-primary">Iniciar Conferencia</button>
 
@@ -87,7 +93,7 @@
         <div class="progressbar"><div id="progressFill"></div></div>
 
         <div class="input-area">
-            <input type="number" id="inputCodigo" placeholder="Digite o numero do volume" inputmode="numeric" min="1" step="1" autocomplete="off">
+            <input type="number" id="inputCodigo" placeholder="Digite o numero do volume" inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" min="1" step="1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
             <button id="btnConfirmar" class="btn-confirmar" type="button">Confirmar</button>
         </div>
 
@@ -196,6 +202,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=8"></script>
 </body>
 </html>

@@ -160,6 +160,9 @@ function renderNotas() {
         inp.id = 'notaVol' + i;
         inp.placeholder = 'Ex: 50';
         inp.setAttribute('inputmode', 'numeric');
+        inp.setAttribute('pattern', '[0-9]*');
+        inp.setAttribute('enterkeyhint', 'next');
+        inp.setAttribute('autocomplete', 'off');
         if (antigos[i - 1] !== undefined) inp.value = antigos[i - 1];
         inp.addEventListener('input', atualizarResumo);
         wrap.appendChild(rotulo);

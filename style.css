@@ -695,7 +695,16 @@ button { touch-action: manipulation; min-height: 44px; }
 .stat small { font-size: 11px; line-height: 1.2; }
 
 .grid { gap: 5px; padding: 10px; min-height: 120px; }
-.cell { font-size: 12px; }
+.cell { font-size: 12px; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+
+/* Celulas maiores em telas pequenas (alvos de toque) */
+@media (max-width: 420px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); }
+    .cell { font-size: 14px; }
+}
+
+.btn-confirmar { min-height: 52px; white-space: nowrap; }
+.input-area input { min-width: 0; }
 
 .input-area input { min-height: 52px; }
 

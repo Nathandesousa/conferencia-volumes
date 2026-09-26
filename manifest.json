@@ -1,0 +1,12 @@
+{
+  "name": "Conferencia de Volumes",
+  "short_name": "Conferencia",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#eef2f2",
+  "theme_color": "#1f3d3d",
+  "icons": [
+    { "src": "nicosia.jpg", "sizes": "225x225", "type": "image/jpeg" }
+  ]
+}
