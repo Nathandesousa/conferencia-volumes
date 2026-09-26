@@ -135,7 +135,14 @@ function valoresNotaAtuais() {
 
 function renderNotas() {
     var antigos = valoresNotaAtuais();
-    var qtd = parseInt($('numNotas').value) || 0;
+    var bruto = ($('numNotas').value || '').trim();
+    var lista = $('notasLista');
+    if (bruto === '') {
+        lista.innerHTML = '';
+        $('setupSummary').innerHTML = 'Informe a quantidade de notas';
+        return;
+    }
+    var qtd = parseInt(bruto) || 0;
     if (qtd < 1) qtd = 1;
     if (qtd > 50) qtd = 50;
     $('numNotas').value = qtd;
@@ -198,6 +205,8 @@ function iniciar() {
     if (state.emAndamento) {
         if (!confirmar('Ja existe uma conferencia em andamento. Iniciar nova e descartar a atual?')) return;
     }
+    var camposNota = document.querySelectorAll('#notasLista input');
+    if (!camposNota.length) { alert('Informe a quantidade de notas'); return; }
     var porNota = lerNotas();
     if (!porNota || !porNota.length) { alert('Preencha os volumes de cada nota'); return; }
 
@@ -497,15 +506,25 @@ $('btnDesfazer').addEventListener('click', function () {
 });
 
 function removerVolume(nota, vol) {
-    if (!confirmar('Remover o volume ' + vol + ' da Nota ' + nota + '?')) return;
-
     var k = chave(nota, vol);
-    delete state.registrados[k];
-    state.duplicados = state.duplicados.filter(function (item) { return item !== k; });
+    var dups = 0;
+    for (var i = 0; i < state.duplicados.length; i++) {
+        if (state.duplicados[i] === k) dups++;
+    }
+    if (dups > 0) {
+        var total = dups + 1;
+        if (!confirmar('O volume ' + vol + ' da Nota ' + nota + ' foi registrado ' + total + ' vezes. Remover 1 registro?')) return;
+        var idx = state.duplicados.indexOf(k);
+        if (idx !== -1) state.duplicados.splice(idx, 1);
+        mostrarFeedback('1 registro do volume ' + vol + ' da Nota ' + nota + ' removido', 'cancel');
+    } else {
+        if (!confirmar('Remover o volume ' + vol + ' da Nota ' + nota + '?')) return;
+        delete state.registrados[k];
+        mostrarFeedback('Volume ' + vol + ' da Nota ' + nota + ' removido', 'cancel');
+    }
     state.ultimoRegistro = null;
     atualizarGrade();
     atualizarContadores();
-    mostrarFeedback('Volume ' + vol + ' da Nota ' + nota + ' removido', 'cancel');
     somConfirma();
 }
 
