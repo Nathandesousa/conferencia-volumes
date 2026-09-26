@@ -115,32 +115,96 @@ $('btnVoltarConfig').addEventListener('click', function () { showScreen('setup')
     }
 })();
 
-/* ===== Setup / resumo ===== */
-$('listaNotas').addEventListener('input', atualizarResumo);
+/* ===== Setup / notas ===== */
+$('numNotas').addEventListener('input', renderNotas);
+$('btnMaisNota').addEventListener('click', function () {
+    $('numNotas').value = (parseInt($('numNotas').value) || 0) + 1;
+    renderNotas();
+});
+$('btnMenosNota').addEventListener('click', function () {
+    $('numNotas').value = Math.max(1, (parseInt($('numNotas').value) || 1) - 1);
+    renderNotas();
+});
 
-function parseListaNotas() {
-    var linhas = $('listaNotas').value.split('\n');
+function valoresNotaAtuais() {
+    var vals = [];
+    var inputs = document.querySelectorAll('#notasLista input');
+    for (var i = 0; i < inputs.length; i++) vals.push(inputs[i].value);
+    return vals;
+}
+
+function renderNotas() {
+    var antigos = valoresNotaAtuais();
+    var qtd = parseInt($('numNotas').value) || 0;
+    if (qtd < 1) qtd = 1;
+    if (qtd > 50) qtd = 50;
+    $('numNotas').value = qtd;
+    var lista = $('notasLista');
+    lista.innerHTML = '';
+    for (var i = 1; i <= qtd; i++) {
+        var row = document.createElement('div');
+        row.className = 'nota-row';
+        var rotulo = document.createElement('span');
+        rotulo.className = 'nota-nome';
+        rotulo.textContent = 'Nota ' + i;
+        var inp = document.createElement('input');
+        inp.type = 'number';
+        inp.min = '1';
+        inp.id = 'notaVol' + i;
+        inp.placeholder = 'Volumes';
+        inp.setAttribute('inputmode', 'numeric');
+        if (antigos[i - 1] !== undefined) inp.value = antigos[i - 1];
+        (function (campo) {
+            campo.addEventListener('input', atualizarResumo);
+        })(inp);
+        var faixa = document.createElement('small');
+        faixa.className = 'nota-faixa';
+        faixa.id = 'notaFaixa' + i;
+        row.appendChild(rotulo);
+        row.appendChild(inp);
+        row.appendChild(faixa);
+        lista.appendChild(row);
+    }
+    atualizarResumo();
+}
+
+function lerNotas() {
+    var inputs = document.querySelectorAll('#notasLista input');
+    if (!inputs.length) return null;
     var lista = [];
-    for (var i = 0; i < linhas.length; i++) {
-        var bruto = linhas[i].trim();
-        if (bruto === '') continue;
-        if (!/^\d+$/.test(bruto)) return null;
-        var n = parseInt(bruto);
-        if (n <= 0) return null;
-        lista.push(n);
+    for (var i = 0; i < inputs.length; i++) {
+        var v = parseInt(inputs[i].value);
+        if (isNaN(v) || v <= 0) return null;
+        lista.push(v);
     }
     return lista;
 }
 
 function atualizarResumo() {
-    var lista = parseListaNotas();
-    if (!lista || !lista.length) {
-        $('setupSummary').innerHTML = 'Informe a quantidade de volumes de cada nota';
-        return;
-    }
+    var inputs = document.querySelectorAll('#notasLista input');
+    var offset = 0;
     var total = 0;
-    for (var i = 0; i < lista.length; i++) total += lista[i];
-    $('setupSummary').innerHTML = '<strong>' + lista.length + '</strong> nota(s) &middot; <strong>' + total + '</strong> volumes no total';
+    var completos = 0;
+    for (var i = 0; i < inputs.length; i++) {
+        var v = parseInt(inputs[i].value);
+        if (isNaN(v) || v <= 0) {
+            for (var j = i; j < inputs.length; j++) {
+                var f = $('notaFaixa' + (j + 1));
+                if (f) f.textContent = '';
+            }
+            break;
+        }
+        completos++;
+        total += v;
+        var faixa = $('notaFaixa' + (i + 1));
+        if (faixa) faixa.textContent = 'vols ' + (offset + 1) + ' a ' + (offset + v);
+        offset += v;
+    }
+    if (completos === inputs.length && inputs.length > 0) {
+        $('setupSummary').innerHTML = '<strong>' + inputs.length + '</strong> nota(s) &middot; <strong>' + total + '</strong> volumes no total';
+    } else {
+        $('setupSummary').innerHTML = 'Preencha os volumes de cada nota';
+    }
 }
 
 $('btnIniciar').addEventListener('click', iniciar);
@@ -149,8 +213,8 @@ function iniciar() {
     if (state.emAndamento) {
         if (!confirmar('Ja existe uma conferencia em andamento. Iniciar nova e descartar a atual?')) return;
     }
-    var porNota = parseListaNotas();
-    if (!porNota || !porNota.length) { alert('Informe a quantidade de volumes de cada nota (um por linha)'); return; }
+    var porNota = lerNotas();
+    if (!porNota || !porNota.length) { alert('Preencha os volumes de cada nota'); return; }
 
     var listas = [];
     var offset = 0;
@@ -696,5 +760,5 @@ function escapar(s) {
 
 /* ===== Inicializacao ===== */
 carregarConfig();
-atualizarResumo();
+renderNotas();
 showScreen('setup');

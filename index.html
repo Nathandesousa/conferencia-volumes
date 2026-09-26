@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Conferencia de Volumes</title>
     <meta name="theme-color" content="#1f3d3d">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -21,12 +21,22 @@
     <section id="screen-setup" class="screen active">
         <div class="card">
             <div class="field">
-                <label for="listaNotas">Volumes de cada nota (um por linha)</label>
-                <textarea id="listaNotas" rows="4" placeholder="40&#10;200" spellcheck="false"></textarea>
-                <small>Exemplo: a nota com 40 volumes recebe os volumes 1 a 40, a nota com 200 recebe 41 a 240.</small>
+                <label>Quantas notas (NF)?</label>
+                <div class="stepper">
+                    <button id="btnMenosNota" class="btn-step" type="button">&minus;</button>
+                    <input type="number" id="numNotas" min="1" max="50" value="1" inputmode="numeric">
+                    <button id="btnMaisNota" class="btn-step" type="button">+</button>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Volumes de cada nota</label>
+                <div id="notasLista"></div>
             </div>
 
             <div class="summary" id="setupSummary"></div>
+
+            <p class="versao">versao 4</p>
 
             <button id="btnIniciar" class="btn-primary">Iniciar Conferencia</button>
 
@@ -183,6 +193,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=4"></script>
 </body>
 </html>

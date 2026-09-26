@@ -140,6 +140,87 @@ body {
     margin-top: 4px;
 }
 
+/* ===== Contador de notas ===== */
+.stepper {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.stepper input {
+    flex: 1;
+    padding: 13px;
+    border: 2px solid #d9e2e2;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: 800;
+    text-align: center;
+    background: #fbfdfd;
+    color: var(--primary);
+}
+
+.btn-step {
+    width: 56px;
+    font-size: 26px;
+    font-weight: 800;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.btn-step:active { transform: scale(0.94); opacity: 0.9; }
+
+/* ===== Lista de volumes por nota ===== */
+.nota-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f6f9f9;
+    border: 2px solid #eef2f2;
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+}
+
+.nota-nome {
+    font-weight: 800;
+    color: var(--primary);
+    font-size: 15px;
+    min-width: 58px;
+}
+
+.nota-row input {
+    flex: 1;
+    padding: 11px;
+    border: 2px solid #d9e2e2;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    background: #fff;
+    min-width: 0;
+}
+
+.nota-row input:focus { outline: none; border-color: var(--accent); }
+
+.nota-faixa {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+    min-width: 74px;
+    text-align: right;
+    margin: 0;
+}
+
+.versao {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 14px;
+}
+
 /* ===== Botoes ===== */
 .btn-primary {
     width: 100%;
