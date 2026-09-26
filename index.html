@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Conferencia de Volumes</title>
     <meta name="theme-color" content="#1f3d3d">
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -29,7 +29,7 @@
 
             <div class="summary" id="setupSummary"></div>
 
-            <p class="versao">versao 5</p>
+            <p class="versao">versao 6</p>
 
             <button id="btnIniciar" class="btn-primary">Iniciar Conferencia</button>
 
@@ -164,6 +164,16 @@
         </div>
     </div>
 
+    <!-- ===== MODAL ESCOLHA DA NOTA ===== -->
+    <div id="modalNota" class="modal-overlay">
+        <div class="modal">
+            <h2>De qual nota?</h2>
+            <p id="modalNotaMsg">O volume existe em mais de uma nota.</p>
+            <div id="modalNotaBtns"></div>
+            <button id="btnNotaCancel" class="btn-cancel">Cancelar</button>
+        </div>
+    </div>
+
     <!-- ===== MODAL VOLUME REPETIDO ===== -->
     <div id="modalDup" class="modal-overlay">
         <div class="modal">
@@ -186,6 +196,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>

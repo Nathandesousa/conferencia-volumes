@@ -1,17 +1,25 @@
 /* ===== Estado ===== */
 var state = {
-    volumes: [],
-    registrados: {},
-    duplicados: [],
+    notas: [],            // volumes de cada nota, ex: [10, 5]
+    registrados: {},      // "nota:vol" -> true
+    duplicados: [],       // ["nota:vol"]
     semEtiqueta: 0,
     total: 0,
     nf: '',
-    ultimoRegistro: null,       // { tipo, vol } para desfazer
+    ultimoRegistro: null,       // { tipo, chave } para desfazer
     config: { som: true, vibrar: true },
     wakeLock: null,
     emAndamento: false,
-    dupPendente: null
+    dupPendente: null,    // "nota:vol"
+    notaPendente: null    // vol aguardando escolha da nota
 };
+
+/* Identificador unico de um volume: "nota:vol", ex: "2:3" = Nota 2, Vol 3 */
+function chave(nota, vol) { return nota + ':' + vol; }
+function rotuloChave(k) {
+    var p = String(k).split(':');
+    return 'Nota ' + p[0] + ' - Vol ' + p[1];
+}
 
 var dbKEY = 'conferencia_historico';
 var CONFIG_KEY = 'conf_config_v1';
@@ -193,21 +201,19 @@ function iniciar() {
     var porNota = lerNotas();
     if (!porNota || !porNota.length) { alert('Preencha os volumes de cada nota'); return; }
 
-    var listas = [];
-    var offset = 0;
-    for (var n = 0; n < porNota.length; n++) {
-        for (var w = 1; w <= porNota[n]; w++) listas.push(w + offset);
-        offset += porNota[n];
-    }
+    var total = 0;
+    for (var n = 0; n < porNota.length; n++) total += porNota[n];
 
-    if (listas.length === 0) { alert('Nenhum volume gerado'); return; }
+    if (total === 0) { alert('Nenhum volume gerado'); return; }
 
-    state.volumes = listas;
-    state.total = listas.length;
+    state.notas = porNota.slice();
+    state.total = total;
     state.registrados = {};
     state.duplicados = [];
     state.semEtiqueta = 0;
     state.ultimoRegistro = null;
+    state.dupPendente = null;
+    state.notaPendente = null;
     state.nf = formatarDataHora(new Date());
     state.emAndamento = true;
 
@@ -228,21 +234,30 @@ function confirmar(msg) {
     return window.confirm(msg);
 }
 
-/* ===== Grade ===== */
+/* ===== Grade (uma secao por nota) ===== */
 function montarGrade() {
     var grid = $('grid');
     grid.innerHTML = '';
-    for (var i = 0; i < state.volumes.length; i++) {
-        var cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.dataset.vol = state.volumes[i];
-        cell.textContent = state.volumes[i];
-        cell.addEventListener('click', function () {
-            var vol = parseInt(this.dataset.vol);
-            if (!state.registrados[vol] && state.duplicados.indexOf(vol) === -1) return;
-            removerVolume(vol);
-        });
-        grid.appendChild(cell);
+    for (var n = 0; n < state.notas.length; n++) {
+        var titulo = document.createElement('div');
+        titulo.className = 'nota-titulo';
+        titulo.textContent = 'Nota ' + (n + 1) + ' (' + state.notas[n] + ' volumes)';
+        grid.appendChild(titulo);
+        for (var w = 1; w <= state.notas[n]; w++) {
+            (function (nota, vol) {
+                var cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.nota = nota;
+                cell.dataset.vol = vol;
+                cell.textContent = vol;
+                cell.addEventListener('click', function () {
+                    var k = chave(nota, vol);
+                    if (!state.registrados[k] && state.duplicados.indexOf(k) === -1) return;
+                    removerVolume(nota, vol);
+                });
+                grid.appendChild(cell);
+            })(n + 1, w);
+        }
     }
 }
 
@@ -254,12 +269,13 @@ function limparGradeCores() {
 function atualizarGrade() {
     var cells = document.querySelectorAll('.cell');
     for (var i = 0; i < cells.length; i++) {
+        var k = chave(parseInt(cells[i].dataset.nota), parseInt(cells[i].dataset.vol));
         var cls = 'cell';
-        if (state.registrados[parseInt(cells[i].dataset.vol)]) cls += ' ok';
-        if (state.duplicados.indexOf(parseInt(cells[i].dataset.vol)) !== -1) cls += ' dup';
+        if (state.registrados[k]) cls += ' ok';
+        if (state.duplicados.indexOf(k) !== -1) cls += ' dup';
         cells[i].className = cls;
         if (cls !== 'cell') {
-            cells[i].title = 'Clique para remover o volume ' + cells[i].dataset.vol;
+            cells[i].title = 'Clique para remover ' + rotuloChave(k);
         } else {
             cells[i].removeAttribute('title');
         }
@@ -284,8 +300,11 @@ function atualizarContadores() {
 /* ===== Deduzir caixa(s) sem etiqueta ===== */
 function calcularFaltantes() {
     var falta = [];
-    for (var i = 0; i < state.volumes.length; i++) {
-        if (!state.registrados[state.volumes[i]]) falta.push(state.volumes[i]);
+    for (var n = 0; n < state.notas.length; n++) {
+        for (var w = 1; w <= state.notas[n]; w++) {
+            var k = chave(n + 1, w);
+            if (!state.registrados[k]) falta.push(k);
+        }
     }
     return falta;
 }
@@ -324,37 +343,33 @@ function formatarDataHora(d) {
     return dd + '/' + mm + '/' + aa + ' ' + hh + ':' + mi;
 }
 
-/* ===== Registro de volume ===== */
-function registrar(entrada, isDupConfirm) {
-    entrada = (entrada || '').trim();
-    if (!entrada) return;
-    var vol = parseInt(entrada);
-
-    if (isNaN(vol)) { mostrarFeedback('Digite o numero do volume', 'err'); somErro(); return; }
-    if (vol < 1) { mostrarFeedback('Volume invalido: ' + vol, 'err'); somErro(); return; }
-    if (entrada.length > 6) { mostrarFeedback('Esse parece ser o codigo da caixa. Digite o VOL.', 'err'); somErro(); return; }
-    if (vol > state.total) { mostrarFeedback('Volume ' + vol + ' nao existe (max ' + state.total + ')', 'err'); somErro(); return; }
-    if (state.registrados[vol]) {
+/* ===== Registro de volume (por nota) ===== */
+function registrar(nota, vol, isDupConfirm) {
+    if (nota < 1 || nota > state.notas.length || vol < 1 || vol > state.notas[nota - 1]) {
+        mostrarFeedback('Volume invalido', 'err'); somErro(); return;
+    }
+    var k = chave(nota, vol);
+    if (state.registrados[k]) {
         if (isDupConfirm) {
-            state.duplicados.push(vol);
-            state.ultimoRegistro = { tipo: 'dup', vol: vol };
+            state.duplicados.push(k);
+            state.ultimoRegistro = { tipo: 'dup', chave: k };
             fecharModalDup();
             atualizarGrade();
             atualizarContadores();
-            mostrarFeedback('Volume ' + vol + ' registrado como repetido', 'dupOk');
+            mostrarFeedback('Volume ' + vol + ' da Nota ' + nota + ' registrado como repetido', 'dupOk');
             somDup();
             vibrar(100);
         } else {
-            abrirModalDup(vol);
+            abrirModalDup(nota, vol);
         }
         return;
     }
 
-    state.registrados[vol] = true;
-    state.ultimoRegistro = { tipo: 'ok', vol: vol };
+    state.registrados[k] = true;
+    state.ultimoRegistro = { tipo: 'ok', chave: k };
     atualizarGrade();
     atualizarContadores();
-    mostrarFeedback('Volume ' + vol + ' registrado', 'ok');
+    mostrarFeedback('Volume ' + vol + ' da Nota ' + nota + ' registrado', 'ok');
     somOk();
     vibrar();
 
@@ -365,8 +380,49 @@ function registrar(entrada, isDupConfirm) {
 
 function processarEntrada(valor) {
     valor = (valor || '').trim();
-    registrar(valor, false);
+    var vol = parseInt(valor);
+    if (isNaN(vol) || vol < 1) { mostrarFeedback('Digite o numero do volume', 'err'); somErro(); return; }
+    var candidatas = [];
+    for (var n = 0; n < state.notas.length; n++) {
+        if (vol <= state.notas[n]) candidatas.push(n + 1);
+    }
+    if (!candidatas.length) { mostrarFeedback('Volume ' + vol + ' nao existe em nenhuma nota', 'err'); somErro(); return; }
+    if (candidatas.length === 1) {
+        registrar(candidatas[0], vol, false);
+    } else {
+        abrirModalNota(vol, candidatas);
+    }
 }
+
+/* ===== Escolha da nota (volume existe em mais de uma) ===== */
+function abrirModalNota(vol, candidatas) {
+    state.notaPendente = vol;
+    $('modalNotaMsg').textContent = 'O volume ' + vol + ' existe em ' + candidatas.length + ' notas. De qual nota ele e?';
+    var box = $('modalNotaBtns');
+    box.innerHTML = '';
+    for (var i = 0; i < candidatas.length; i++) {
+        (function (nota) {
+            var b = document.createElement('button');
+            b.className = 'btn-confirm';
+            b.textContent = 'Nota ' + nota + ' (' + state.notas[nota - 1] + ' volumes)';
+            b.addEventListener('click', function () {
+                $('modalNota').classList.remove('active');
+                state.notaPendente = null;
+                registrar(nota, vol, false);
+                $('inputCodigo').value = '';
+                $('inputCodigo').focus();
+            });
+            box.appendChild(b);
+        })(candidatas[i]);
+    }
+    $('modalNota').classList.add('active');
+    somDup();
+}
+$('btnNotaCancel').addEventListener('click', function () {
+    $('modalNota').classList.remove('active');
+    state.notaPendente = null;
+    mostrarFeedback('Registro cancelado', 'cancel');
+});
 
 $('inputCodigo').addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.keyCode === 13) {
@@ -399,9 +455,9 @@ $('btnModalConfirm').addEventListener('click', function () {
 });
 
 /* ===== Volume repetido (modal) ===== */
-function abrirModalDup(vol) {
-    state.dupPendente = vol;
-    $('modalDupMsg').textContent = 'O volume ' + vol + ' ja foi registrado. Registrar como repetido (duplicado)?';
+function abrirModalDup(nota, vol) {
+    state.dupPendente = chave(nota, vol);
+    $('modalDupMsg').textContent = 'O volume ' + vol + ' da Nota ' + nota + ' ja foi registrado. Registrar como repetido (duplicado)?';
     $('modalDup').classList.add('active');
     somDup();
 }
@@ -414,7 +470,10 @@ $('btnDupCancel').addEventListener('click', function () {
     mostrarFeedback('Registro repetido cancelado', 'cancel');
 });
 $('btnDupConfirm').addEventListener('click', function () {
-    if (state.dupPendente !== null) registrar(String(state.dupPendente), true);
+    if (state.dupPendente !== null) {
+        var p = String(state.dupPendente).split(':');
+        registrar(parseInt(p[0]), parseInt(p[1]), true);
+    }
 });
 
 /* ===== Desfazer ultimo ===== */
@@ -422,12 +481,12 @@ $('btnDesfazer').addEventListener('click', function () {
     if (!state.ultimoRegistro) { mostrarFeedback('Nada para desfazer', 'err'); return; }
     var u = state.ultimoRegistro;
     if (u.tipo === 'ok') {
-        delete state.registrados[u.vol];
-        mostrarFeedback('Desfeito: volume ' + u.vol, 'cancel');
+        delete state.registrados[u.chave];
+        mostrarFeedback('Desfeito: ' + rotuloChave(u.chave), 'cancel');
     } else if (u.tipo === 'dup') {
-        var i = state.duplicados.indexOf(u.vol);
+        var i = state.duplicados.indexOf(u.chave);
         if (i !== -1) state.duplicados.splice(i, 1);
-        mostrarFeedback('Desfeito: repetido ' + u.vol, 'cancel');
+        mostrarFeedback('Desfeito: repetido ' + rotuloChave(u.chave), 'cancel');
     } else if (u.tipo === 'sem') {
         state.semEtiqueta = Math.max(0, state.semEtiqueta - 1);
         mostrarFeedback('Desfeito: caixa sem etiqueta', 'cancel');
@@ -437,15 +496,16 @@ $('btnDesfazer').addEventListener('click', function () {
     atualizarContadores();
 });
 
-function removerVolume(vol) {
-    if (!confirmar('Remover o volume ' + vol + ' da conferencia?')) return;
+function removerVolume(nota, vol) {
+    if (!confirmar('Remover o volume ' + vol + ' da Nota ' + nota + '?')) return;
 
-    delete state.registrados[vol];
-    state.duplicados = state.duplicados.filter(function (item) { return item !== vol; });
+    var k = chave(nota, vol);
+    delete state.registrados[k];
+    state.duplicados = state.duplicados.filter(function (item) { return item !== k; });
     state.ultimoRegistro = null;
     atualizarGrade();
     atualizarContadores();
-    mostrarFeedback('Volume ' + vol + ' removido', 'cancel');
+    mostrarFeedback('Volume ' + vol + ' da Nota ' + nota + ' removido', 'cancel');
     somConfirma();
 }
 
@@ -484,9 +544,11 @@ function finishConfirmation() {
     var ok = Object.keys(state.registrados).length;
     var listaFalta = [];
     var listaOk = [];
-    for (var i = 0; i < state.volumes.length; i++) {
-        var v = state.volumes[i];
-        if (state.registrados[v]) listaOk.push(v); else listaFalta.push(v);
+    for (var n = 0; n < state.notas.length; n++) {
+        for (var w = 1; w <= state.notas[n]; w++) {
+            var k = chave(n + 1, w);
+            if (state.registrados[k]) listaOk.push(k); else listaFalta.push(k);
+        }
     }
     var faltaReal = faltantesReais();
 
@@ -509,7 +571,7 @@ function finishConfirmation() {
         for (var j = 0; j < faltasReais.length; j++) {
             var b = document.createElement('span');
             b.className = 'badge';
-            b.textContent = 'Vol ' + faltasReais[j];
+            b.textContent = rotuloChave(faltasReais[j]);
             divFalta.appendChild(b);
         }
     }
@@ -528,7 +590,7 @@ function finishConfirmation() {
     for (var k = 0; k < listaOk.length; k++) {
         var bo = document.createElement('span');
         bo.className = 'badge ok';
-        bo.textContent = 'Vol ' + listaOk[k];
+        bo.textContent = rotuloChave(listaOk[k]);
         divOk.appendChild(bo);
     }
 
@@ -544,12 +606,14 @@ function reportSemAvisoFill() {
     var sem = state.semEtiqueta;
     var dups = state.duplicados.length;
     var faltantes = calcularFaltantes();
+    var rotulos = [];
+    for (var r = 0; r < faltantes.length; r++) rotulos.push(rotuloChave(faltantes[r]));
     var cobertos = sem + dups;
     if (sem === 0) { el.innerHTML = ''; return; }
     if (cobertos >= faltantes.length && faltantes.length > 0) {
         var extra = '';
         if (dups > 0) extra = ' (incluindo ' + dups + ' repetido(s))';
-        el.innerHTML = 'Completo: os volumes que faltavam foram cobertos pelas sem etiqueta e/ou repetidos: <strong>' + faltantes.join(', ') + '</strong>' + extra + '.';
+        el.innerHTML = 'Completo: os volumes que faltavam foram cobertos pelas sem etiqueta e/ou repetidos: <strong>' + rotulos.join(', ') + '</strong>' + extra + '.';
         return;
     }
     if (sem > faltantes.length) {
@@ -557,9 +621,9 @@ function reportSemAvisoFill() {
         return;
     }
     if (sem === 1) {
-        el.innerHTML = 'A caixa sem etiqueta e o volume <strong>' + faltantes[0] + '</strong>.';
+        el.innerHTML = 'A caixa sem etiqueta e <strong>' + rotulos[0] + '</strong>.';
     } else {
-        el.innerHTML = 'As <strong>' + sem + '</strong> caixas sem etiqueta podem ser as volumes: <strong>' + faltantes.join(', ') + '</strong> (nao da para dizer qual e qual).';
+        el.innerHTML = 'As <strong>' + sem + '</strong> caixas sem etiqueta podem ser: <strong>' + rotulos.join(', ') + '</strong> (nao da para dizer qual e qual).';
     }
 }
 
@@ -573,7 +637,7 @@ function reportDupFill() {
     for (var d = 0; d < state.duplicados.length; d++) {
         var bd = document.createElement('span');
         bd.className = 'badge dup';
-        bd.textContent = 'Vol ' + state.duplicados[d];
+        bd.textContent = rotuloChave(state.duplicados[d]);
         reportDup.appendChild(bd);
     }
 }
@@ -609,14 +673,16 @@ function exportarExcel() {
     linhas.push(['Repetidos', state.duplicados.length]);
     linhas.push(['Sem etiqueta', state.semEtiqueta]);
     linhas.push([]);
-    linhas.push(['VOLUME', 'CODIGO CAIXA', 'STATUS']);
-    for (var i = 0; i < state.volumes.length; i++) {
-        var vol = state.volumes[i];
-        var status = state.registrados[vol] ? 'Registrado' : 'Faltando';
-        if (state.duplicados.indexOf(vol) !== -1) {
-            status = 'Repetido';
+    linhas.push(['NOTA', 'VOLUME', 'STATUS']);
+    for (var nn = 0; nn < state.notas.length; nn++) {
+        for (var ww = 1; ww <= state.notas[nn]; ww++) {
+            var kk = chave(nn + 1, ww);
+            var status = state.registrados[kk] ? 'Registrado' : 'Faltando';
+            if (state.duplicados.indexOf(kk) !== -1) {
+                status = 'Repetido';
+            }
+            linhas.push([nn + 1, ww, status]);
         }
-        linhas.push([vol, '', status]);
     }
     linhas.push([]);
     linhas.push(['CAIXAS SEM ETIQUETA', state.semEtiqueta]);
@@ -664,7 +730,8 @@ function salvarNoHistorico() {
         falta: falta,
         sem: state.semEtiqueta,
         dup: dupLista.length,
-        faltaLista: faltaLista
+        faltaLista: faltaLista,
+        notas: state.notas.slice()
     };
 
     var hist = carregarHistorico();

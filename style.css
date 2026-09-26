@@ -366,6 +366,26 @@ body {
     cursor: pointer;
 }
 
+/* ===== Titulo de cada nota na grade ===== */
+.nota-titulo {
+    grid-column: 1 / -1;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--primary);
+    background: #e2e9e9;
+    border-radius: 8px;
+    padding: 7px 10px;
+    margin-top: 4px;
+}
+
+/* ===== Botoes de escolha da nota ===== */
+#modalNotaBtns .btn-confirm {
+    margin-bottom: 10px;
+}
+#modalNotaBtns .btn-confirm:last-child {
+    margin-bottom: 0;
+}
+
 /* ===== Relatorio ===== */
 .report-list {
     max-height: 200px;
