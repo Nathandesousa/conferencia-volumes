@@ -117,14 +117,6 @@ $('btnVoltarConfig').addEventListener('click', function () { showScreen('setup')
 
 /* ===== Setup / notas ===== */
 $('numNotas').addEventListener('input', renderNotas);
-$('btnMaisNota').addEventListener('click', function () {
-    $('numNotas').value = (parseInt($('numNotas').value) || 0) + 1;
-    renderNotas();
-});
-$('btnMenosNota').addEventListener('click', function () {
-    $('numNotas').value = Math.max(1, (parseInt($('numNotas').value) || 1) - 1);
-    renderNotas();
-});
 
 function valoresNotaAtuais() {
     var vals = [];
@@ -142,28 +134,22 @@ function renderNotas() {
     var lista = $('notasLista');
     lista.innerHTML = '';
     for (var i = 1; i <= qtd; i++) {
-        var row = document.createElement('div');
-        row.className = 'nota-row';
-        var rotulo = document.createElement('span');
-        rotulo.className = 'nota-nome';
-        rotulo.textContent = 'Nota ' + i;
+        var wrap = document.createElement('div');
+        wrap.className = 'field';
+        var rotulo = document.createElement('label');
+        rotulo.setAttribute('for', 'notaVol' + i);
+        rotulo.textContent = 'Volumes da nota ' + i;
         var inp = document.createElement('input');
         inp.type = 'number';
         inp.min = '1';
         inp.id = 'notaVol' + i;
-        inp.placeholder = 'Volumes';
+        inp.placeholder = 'Ex: 50';
         inp.setAttribute('inputmode', 'numeric');
         if (antigos[i - 1] !== undefined) inp.value = antigos[i - 1];
-        (function (campo) {
-            campo.addEventListener('input', atualizarResumo);
-        })(inp);
-        var faixa = document.createElement('small');
-        faixa.className = 'nota-faixa';
-        faixa.id = 'notaFaixa' + i;
-        row.appendChild(rotulo);
-        row.appendChild(inp);
-        row.appendChild(faixa);
-        lista.appendChild(row);
+        inp.addEventListener('input', atualizarResumo);
+        wrap.appendChild(rotulo);
+        wrap.appendChild(inp);
+        lista.appendChild(wrap);
     }
     atualizarResumo();
 }
@@ -182,29 +168,20 @@ function lerNotas() {
 
 function atualizarResumo() {
     var inputs = document.querySelectorAll('#notasLista input');
-    var offset = 0;
     var total = 0;
-    var completos = 0;
     for (var i = 0; i < inputs.length; i++) {
         var v = parseInt(inputs[i].value);
         if (isNaN(v) || v <= 0) {
-            for (var j = i; j < inputs.length; j++) {
-                var f = $('notaFaixa' + (j + 1));
-                if (f) f.textContent = '';
-            }
-            break;
+            $('setupSummary').innerHTML = 'Preencha os volumes de cada nota';
+            return;
         }
-        completos++;
         total += v;
-        var faixa = $('notaFaixa' + (i + 1));
-        if (faixa) faixa.textContent = 'vols ' + (offset + 1) + ' a ' + (offset + v);
-        offset += v;
     }
-    if (completos === inputs.length && inputs.length > 0) {
-        $('setupSummary').innerHTML = '<strong>' + inputs.length + '</strong> nota(s) &middot; <strong>' + total + '</strong> volumes no total';
-    } else {
+    if (!inputs.length) {
         $('setupSummary').innerHTML = 'Preencha os volumes de cada nota';
+        return;
     }
+    $('setupSummary').innerHTML = '<strong>' + inputs.length + '</strong> nota(s) &middot; <strong>' + total + '</strong> volumes no total';
 }
 
 $('btnIniciar').addEventListener('click', iniciar);
