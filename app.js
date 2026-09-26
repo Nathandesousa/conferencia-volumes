@@ -1,6 +1,3 @@
-/* ===== URL biblioteca HTML5 QR ===== */
-var QR_URL = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
-
 /* ===== Estado ===== */
 var state = {
     volumes: [],
@@ -9,16 +6,11 @@ var state = {
     semEtiqueta: 0,
     total: 0,
     nf: '',
-    scanner: null,
-    scanAtivo: false,
     ultimoRegistro: null,       // { tipo, vol } para desfazer
-    config: { continuo: false, som: true, vibrar: true },
+    config: { som: true, vibrar: true },
     wakeLock: null,
     emAndamento: false,
-    dupPendente: null,
-    codigoEspera: null,     // codigo da caixa escaneado aguardando o VOL ser digitado
-    codigos: {},            // vol -> codigo da caixa (registrados ok)
-    dupCodigos: {}          // vol -> codigo da caixa (repetidos)
+    dupPendente: null
 };
 
 var dbKEY = 'conferencia_historico';
@@ -94,19 +86,14 @@ document.addEventListener('visibilitychange', function () {
 function carregarConfig() {
     try {
         var d = localStorage.getItem(CONFIG_KEY);
-        if (d) state.config = Object.assign({ continuo: false, som: true, vibrar: true }, JSON.parse(d));
+        if (d) state.config = Object.assign({ som: true, vibrar: true }, JSON.parse(d));
     } catch (e) {}
-    $('cfgContinuo').checked = state.config.continuo;
     $('cfgSom').checked = state.config.som;
     $('cfgVibrar').checked = state.config.vibrar;
 }
 function salvarConfig() {
     localStorage.setItem(CONFIG_KEY, JSON.stringify(state.config));
 }
-function aplicarDisableSemConfirm() {
-    if (state.config.continuo) { $('btnScan').textContent = 'PARAR'; } else { $('btnScan').textContent = 'SCAN'; }
-}
-$('cfgContinuo').addEventListener('change', function () { state.config.continuo = this.checked; salvarConfig(); aplicarDisableSemConfirm(); });
 $('cfgSom').addEventListener('change', function () { state.config.som = this.checked; salvarConfig(); });
 $('cfgVibrar').addEventListener('change', function () { state.config.vibrar = this.checked; salvarConfig(); });
 $('btnConfig').addEventListener('click', function () { showScreen('config'); });
@@ -164,9 +151,6 @@ function iniciar() {
     state.duplicados = [];
     state.semEtiqueta = 0;
     state.ultimoRegistro = null;
-    state.codigoEspera = null;
-    state.codigos = {};
-    state.dupCodigos = {};
     state.nf = formatarDataHora(new Date());
     state.emAndamento = true;
 
@@ -196,6 +180,11 @@ function montarGrade() {
         cell.className = 'cell';
         cell.dataset.vol = state.volumes[i];
         cell.textContent = state.volumes[i];
+        cell.addEventListener('click', function () {
+            var vol = parseInt(this.dataset.vol);
+            if (!state.registrados[vol] && state.duplicados.indexOf(vol) === -1) return;
+            removerVolume(vol);
+        });
         grid.appendChild(cell);
     }
 }
@@ -212,6 +201,11 @@ function atualizarGrade() {
         if (state.registrados[parseInt(cells[i].dataset.vol)]) cls += ' ok';
         if (state.duplicados.indexOf(parseInt(cells[i].dataset.vol)) !== -1) cls += ' dup';
         cells[i].className = cls;
+        if (cls !== 'cell') {
+            cells[i].title = 'Clique para remover o volume ' + cells[i].dataset.vol;
+        } else {
+            cells[i].removeAttribute('title');
+        }
     }
 }
 
@@ -227,7 +221,6 @@ function atualizarContadores() {
     $('statDup').textContent = state.duplicados.length;
     var pct = state.total > 0 ? (ok / state.total * 100) : 0;
     $('progressFill').style.width = pct + '%';
-    atualizarAvisoSemEtiqueta();
     atualizarAvisoExcesso();
 }
 
@@ -259,34 +252,6 @@ function atualizarAvisoExcesso() {
     el.innerHTML = 'Atencao: tem <strong>' + ex + '</strong> caixa(s) a mais! (nada faltando para cobrir)';
     el.classList.remove('hidden');
 }
-function atualizarAvisoSemEtiqueta() {
-    var el = $('avisoSemEtiqueta');
-    if (!el) return;
-    var sem = state.semEtiqueta;
-    var dups = state.duplicados.length;
-    var faltantes = calcularFaltantes();
-    var cobertos = sem + dups;
-    if (sem === 0 || faltantes.length === 0) { el.classList.add('hidden'); return; }
-    if (cobertos >= faltantes.length) {
-        var listaCobertos = [];
-        for (var i2 = 0; i2 < faltantes.length; i2++) listaCobertos.push(faltantes[i2]);
-        var extra = '';
-        if (dups > 0) extra = ' (incluindo os <strong>' + dups + '</strong> repetido(s))';
-        el.innerHTML = 'Completo! Os volumes que faltavam foram cobertos pelas sem etiqueta e/ou repetidos: <strong>' + listaCobertos.join(', ') + '</strong>' + extra;
-        el.classList.remove('hidden');
-        return;
-    }
-    if (sem > faltantes.length) { el.classList.add('hidden'); return; }
-    var texto;
-    if (sem === 1) {
-        texto = 'A caixa sem etiqueta e a volume <strong>' + faltantes[0] + '</strong>';
-    } else {
-        texto = 'As caixas sem etiqueta podem ser as volumes: <strong>' + faltantes.join(', ') + '</strong>';
-    }
-    el.innerHTML = texto;
-    el.classList.remove('hidden');
-}
-
 function mostrarFeedback(msg, tipo) {
     var fb = $('feedback');
     fb.textContent = msg;
@@ -303,7 +268,7 @@ function formatarDataHora(d) {
 }
 
 /* ===== Registro de volume ===== */
-function registrar(entrada, isDupConfirm, codigo) {
+function registrar(entrada, isDupConfirm) {
     entrada = (entrada || '').trim();
     if (!entrada) return;
     var vol = parseInt(entrada);
@@ -312,12 +277,9 @@ function registrar(entrada, isDupConfirm, codigo) {
     if (vol < 1) { mostrarFeedback('Volume invalido: ' + vol, 'err'); somErro(); return; }
     if (entrada.length > 6) { mostrarFeedback('Esse parece ser o codigo da caixa. Digite o VOL.', 'err'); somErro(); return; }
     if (vol > state.total) { mostrarFeedback('Volume ' + vol + ' nao existe (max ' + state.total + ')', 'err'); somErro(); return; }
-    codigo = codigo || null;
-
     if (state.registrados[vol]) {
         if (isDupConfirm) {
             state.duplicados.push(vol);
-            if (codigo) state.dupCodigos[vol] = codigo;
             state.ultimoRegistro = { tipo: 'dup', vol: vol };
             fecharModalDup();
             atualizarGrade();
@@ -332,7 +294,6 @@ function registrar(entrada, isDupConfirm, codigo) {
     }
 
     state.registrados[vol] = true;
-    if (codigo) state.codigos[vol] = codigo;
     state.ultimoRegistro = { tipo: 'ok', vol: vol };
     atualizarGrade();
     atualizarContadores();
@@ -347,20 +308,7 @@ function registrar(entrada, isDupConfirm, codigo) {
 
 function processarEntrada(valor) {
     valor = (valor || '').trim();
-    if (valor.length > 6) {
-        state.codigoEspera = valor;
-        ativarAlertaVol();
-        mostrarFeedback('Codigo da caixa (' + valor + ') lido. Digite o VOL.', 'dupOk');
-        somConfirma();
-        return;
-    }
-    if (valor === '') {
-        if (state.codigoEspera) { ativarAlertaVol(); mostrarFeedback('Codigo da caixa lido. Digite o VOL.', 'dupOk'); }
-        return;
-    }
-    registrar(valor, false, state.codigoEspera);
-    state.codigoEspera = null;
-    limparAlertaVol();
+    registrar(valor, false);
 }
 
 $('inputCodigo').addEventListener('keydown', function (e) {
@@ -369,7 +317,11 @@ $('inputCodigo').addEventListener('keydown', function (e) {
         $('inputCodigo').value = '';
     }
 });
-$('inputCodigo').addEventListener('input', function () { limparAlertaVol(); });
+$('btnConfirmar').addEventListener('click', function () {
+    processarEntrada($('inputCodigo').value);
+    $('inputCodigo').value = '';
+    $('inputCodigo').focus();
+});
 
 /* ===== Caixa sem etiqueta ===== */
 $('btnSemEtiqueta').addEventListener('click', function () { abrirModalSem(); });
@@ -414,12 +366,10 @@ $('btnDesfazer').addEventListener('click', function () {
     var u = state.ultimoRegistro;
     if (u.tipo === 'ok') {
         delete state.registrados[u.vol];
-        delete state.codigos[u.vol];
         mostrarFeedback('Desfeito: volume ' + u.vol, 'cancel');
     } else if (u.tipo === 'dup') {
         var i = state.duplicados.indexOf(u.vol);
         if (i !== -1) state.duplicados.splice(i, 1);
-        delete state.dupCodigos[u.vol];
         mostrarFeedback('Desfeito: repetido ' + u.vol, 'cancel');
     } else if (u.tipo === 'sem') {
         state.semEtiqueta = Math.max(0, state.semEtiqueta - 1);
@@ -430,74 +380,16 @@ $('btnDesfazer').addEventListener('click', function () {
     atualizarContadores();
 });
 
-/* ===== Escaneamento ===== */
-$('btnScan').addEventListener('click', toggleScan);
+function removerVolume(vol) {
+    if (!confirmar('Remover o volume ' + vol + ' da conferencia?')) return;
 
-function toggleScan() {
-    if (state.scanAtivo) { pararScan(); return; }
-    iniciarScan();
-}
-
-function iniciarScan() {
-    if (typeof Html5Qrcode === 'undefined') {
-        alert('Escaneador nao carregou. Use a digitacao manual.');
-        return;
-    }
-    usarScan();
-}
-
-function usarScan() {
-    $('scanArea').classList.remove('hidden');
-    $('btnScan').textContent = 'PARAR';
-
-    var scanner = new Html5Qrcode('scanArea');
-    scanner.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 200, height: 110 } },
-        function (decodedText) {
-            onDecoded(decodedText);
-            if (!state.config.continuo) {
-                scanner.stop().then(function () { pararScanUI(); }).catch(function () {});
-            }
-        },
-        function () {}
-    ).then(function () {
-        state.scanner = scanner;
-        state.scanAtivo = true;
-    }).catch(function (err) {
-        alert('Erro ao abrir a camera: ' + err);
-        pararScanUI();
-    });
-}
-
-function onDecoded(decoded) {
-    processarEntrada(decoded);
-    $('inputCodigo').value = '';
-}
-
-function ativarAlertaVol(msg) {
-    var inp = $('inputCodigo');
-    inp.value = '';
-    inp.classList.add('input-alerta');
-    inp.placeholder = msg || 'Digite o VOL';
-}
-function limparAlertaVol() {
-    var inp = $('inputCodigo');
-    inp.classList.remove('input-alerta');
-    inp.placeholder = 'Digite o vol';
-}
-
-function pararScan() {
-    if (state.scanner) { state.scanner.stop().catch(function () {}); state.scanner = null; }
-    pararScanUI();
-}
-
-function pararScanUI() {
-    state.scanAtivo = false;
-    $('scanArea').classList.add('hidden');
-    $('scanArea').innerHTML = '';
-    if (state.config.continuo) { $('btnScan').textContent = 'PARAR'; } else { $('btnScan').textContent = 'SCAN'; }
-    $('inputCodigo').focus();
+    delete state.registrados[vol];
+    state.duplicados = state.duplicados.filter(function (item) { return item !== vol; });
+    state.ultimoRegistro = null;
+    atualizarGrade();
+    atualizarContadores();
+    mostrarFeedback('Volume ' + vol + ' removido', 'cancel');
+    somConfirma();
 }
 
 /* ===== Voltar setup ===== */
@@ -505,7 +397,6 @@ $('btnVoltar').addEventListener('click', function () {
     if (state.emAndamento) {
         if (!confirmar('Sair da conferencia? Os volumes ainda nao registrados serao perdidos.')) return;
     }
-    pararScan();
     soltarWakeLock();
     state.emAndamento = false;
     showScreen('setup');
@@ -531,7 +422,6 @@ $('btnFinConfirm').addEventListener('click', function () {
 });
 
 function finishConfirmation() {
-    pararScan();
     soltarWakeLock();
     state.emAndamento = false;
     var ok = Object.keys(state.registrados).length;
@@ -581,8 +471,7 @@ function finishConfirmation() {
     for (var k = 0; k < listaOk.length; k++) {
         var bo = document.createElement('span');
         bo.className = 'badge ok';
-        var codOk = state.codigos[listaOk[k]] || '';
-        bo.textContent = 'Vol ' + listaOk[k] + (codOk ? ' (' + codOk + ')' : '');
+        bo.textContent = 'Vol ' + listaOk[k];
         divOk.appendChild(bo);
     }
 
@@ -627,8 +516,7 @@ function reportDupFill() {
     for (var d = 0; d < state.duplicados.length; d++) {
         var bd = document.createElement('span');
         bd.className = 'badge dup';
-        var codDup = state.dupCodigos[state.duplicados[d]] || '';
-        bd.textContent = 'Vol ' + state.duplicados[d] + (codDup ? ' (' + codDup + ')' : '');
+        bd.textContent = 'Vol ' + state.duplicados[d];
         reportDup.appendChild(bd);
     }
 }
@@ -668,14 +556,10 @@ function exportarExcel() {
     for (var i = 0; i < state.volumes.length; i++) {
         var vol = state.volumes[i];
         var status = state.registrados[vol] ? 'Registrado' : 'Faltando';
-        var cod = '';
         if (state.duplicados.indexOf(vol) !== -1) {
             status = 'Repetido';
-            cod = state.dupCodigos[vol] || '';
-        } else if (state.registrados[vol]) {
-            cod = state.codigos[vol] || '';
         }
-        linhas.push([vol, cod, status]);
+        linhas.push([vol, '', status]);
     }
     linhas.push([]);
     linhas.push(['CAIXAS SEM ETIQUETA', state.semEtiqueta]);
@@ -795,16 +679,6 @@ function escapar(s) {
 }
 
 /* ===== Inicializacao ===== */
-function carregarQR() {
-    if (typeof Html5Qrcode !== 'undefined' || window.Html5Qrcode) return;
-    var s = document.createElement('script');
-    s.src = QR_URL;
-    s.onload = function () {};
-    s.onerror = function () { console.log('QR nao carregou offline'); };
-    document.body.appendChild(s);
-}
-
 carregarConfig();
-carregarQR();
 atualizarResumo();
 showScreen('setup');

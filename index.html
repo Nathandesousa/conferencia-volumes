@@ -48,14 +48,7 @@
             </div>
         </header>
         <div class="config-group">
-            <h3>Escaneamento</h3>
-            <div class="config-row">
-                <div>
-                    <div class="label">Continuo</div>
-                    <div class="desc">Camera fica aberta registrando varias caixas seguidas</div>
-                </div>
-                <div class="switch"><input type="checkbox" id="cfgContinuo"><label class="slider" for="cfgContinuo"></label></div>
-            </div>
+            <h3>Confirmacao</h3>
             <div class="config-row">
                 <div>
                     <div class="label">Som de confirmacao</div>
@@ -95,10 +88,9 @@
         <div class="progressbar"><div id="progressFill"></div></div>
 
         <div class="input-area">
-            <input type="text" id="inputCodigo" placeholder="Digite o vol" inputmode="numeric" autocomplete="off">
-            <button id="btnScan" class="btn-scan" title="Escanear">SCAN</button>
+            <input type="number" id="inputCodigo" placeholder="Digite o numero do volume" inputmode="numeric" min="1" step="1" autocomplete="off">
+            <button id="btnConfirmar" class="btn-confirmar" type="button">Confirmar</button>
         </div>
-        <div id="scanArea" class="scan-area hidden"></div>
 
         <div class="extra-actions">
             <button id="btnSemEtiqueta" class="btn-sem-etiqueta">Caixa sem<br>etiqueta</button>
@@ -106,6 +98,7 @@
         </div>
 
         <div id="feedback" class="feedback"></div>
+        <p class="grid-hint">Toque em um volume registrado para removê-lo.</p>
 
         <div class="stats">
             <div class="stat ok"><span id="statOk">0</span><small>Registrados</small></div>
@@ -114,7 +107,6 @@
             <div class="stat dup"><span id="statDup">0</span><small>Repetidos</small></div>
         </div>
 
-        <div id="avisoSemEtiqueta" class="aviso-sem hidden"></div>
         <div id="avisoExcesso" class="aviso-excesso hidden"></div>
 
         <div id="grid" class="grid"></div>

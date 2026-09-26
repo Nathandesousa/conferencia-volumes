@@ -221,7 +221,7 @@ body {
 
 .input-area input:focus { outline: none; border-color: var(--accent); }
 
-.btn-scan {
+.btn-confirmar {
     padding: 0 20px;
     font-size: 15px;
     font-weight: 800;
@@ -232,16 +232,7 @@ body {
     cursor: pointer;
 }
 
-.btn-scan:active { transform: scale(0.96); }
-
-.scan-area {
-    margin-bottom: 12px;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #000;
-}
-
-.scan-area video { width: 100%; display: block; }
+.btn-confirmar:active { transform: scale(0.96); }
 
 .hidden { display: none !important; }
 
@@ -286,6 +277,14 @@ body {
 .feedback.dup { background: var(--warn-bg); color: var(--warn); }
 .feedback.err { background: var(--danger-bg); color: var(--danger); }
 .feedback.semEtiqueta { background: var(--danger-bg); color: var(--danger); }
+
+.grid-hint {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    margin: -4px 0 10px;
+    text-align: center;
+}
 
 /* ===== Stats ===== */
 .stats {
@@ -338,6 +337,7 @@ body {
 .cell.ok {
     background: var(--success);
     color: #fff;
+    cursor: pointer;
 }
 
 /* ===== Relatorio ===== */
@@ -659,4 +659,3 @@ button { touch-action: manipulation; min-height: 44px; }
 .config-row .label { font-size: 15px; }
 .switch { flex-shrink: 0; margin-left: 12px; }
 
-.scan-area video { border-radius: 12px; }
