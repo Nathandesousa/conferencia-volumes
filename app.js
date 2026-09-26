@@ -116,14 +116,31 @@ $('btnVoltarConfig').addEventListener('click', function () { showScreen('setup')
 })();
 
 /* ===== Setup / resumo ===== */
-$('numNotas').addEventListener('input', atualizarResumo);
-$('volsNota').addEventListener('input', atualizarResumo);
+$('listaNotas').addEventListener('input', atualizarResumo);
+
+function parseListaNotas() {
+    var linhas = $('listaNotas').value.split('\n');
+    var lista = [];
+    for (var i = 0; i < linhas.length; i++) {
+        var bruto = linhas[i].trim();
+        if (bruto === '') continue;
+        if (!/^\d+$/.test(bruto)) return null;
+        var n = parseInt(bruto);
+        if (n <= 0) return null;
+        lista.push(n);
+    }
+    return lista;
+}
 
 function atualizarResumo() {
-    var numNotas = parseInt($('numNotas').value) || 0;
-    var volsNota = parseInt($('volsNota').value) || 0;
-    var total = numNotas * volsNota;
-    $('setupSummary').innerHTML = total > 0 ? '<strong>' + total + '</strong> volumes no total' : 'Preencha os campos acima';
+    var lista = parseListaNotas();
+    if (!lista || !lista.length) {
+        $('setupSummary').innerHTML = 'Informe a quantidade de volumes de cada nota';
+        return;
+    }
+    var total = 0;
+    for (var i = 0; i < lista.length; i++) total += lista[i];
+    $('setupSummary').innerHTML = '<strong>' + lista.length + '</strong> nota(s) &middot; <strong>' + total + '</strong> volumes no total';
 }
 
 $('btnIniciar').addEventListener('click', iniciar);
@@ -132,15 +149,14 @@ function iniciar() {
     if (state.emAndamento) {
         if (!confirmar('Ja existe uma conferencia em andamento. Iniciar nova e descartar a atual?')) return;
     }
-    var numNotas = parseInt($('numNotas').value) || 0;
-    var volsNota = parseInt($('volsNota').value) || 0;
+    var porNota = parseListaNotas();
+    if (!porNota || !porNota.length) { alert('Informe a quantidade de volumes de cada nota (um por linha)'); return; }
+
     var listas = [];
-
-    if (numNotas <= 0) { alert('Informe a quantidade de notas'); return; }
-    if (volsNota <= 0) { alert('Informe os volumes por nota'); return; }
-
-    for (var n = 0; n < numNotas; n++) {
-        for (var w = 1; w <= volsNota; w++) listas.push(w + n * volsNota);
+    var offset = 0;
+    for (var n = 0; n < porNota.length; n++) {
+        for (var w = 1; w <= porNota[n]; w++) listas.push(w + offset);
+        offset += porNota[n];
     }
 
     if (listas.length === 0) { alert('Nenhum volume gerado'); return; }
