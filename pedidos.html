@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Pedidos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            color: #1a237e;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background-color: #3f51b5;
+            color: #fff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #e8eaf6;
+        }
+        td:nth-child(2), td:nth-child(3) {
+            font-family: monospace;
+        }
+        .tipo {
+            font-weight: bold;
+            color: #1a237e;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Pedidos</h1>
+        <div class="info">Total de 54 pedidos - Tipo: Normal - Cidades: Videira, Fraiburgo, Monte Carlo e Rio das Antas</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>NF (6 dígitos)</th>
+                    <th>Nº do Pedido (9 dígitos)</th>
+                    <th>Tipo</th>
+                    <th>Nome do Revendedor / Cliente</th>
+                    <th>Bairro</th>
+                    <th>Cidade</th>
+                    <th>Endereço</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Videira (14 pedidos) -->
+                <tr>
+                    <td>1</td>
+                    <td>100001</td>
+                    <td>100001001</td>
+                    <td class="tipo">Normal</td>
+                    <td>João Silva</td>
+                    <td>Centro</td>
+                    <td>Videira</td>
+                    <td>Rua das Flores, 125</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>100002</td>
+                    <td>100002002</td>
+                    <td class="tipo">Normal</td>
+                    <td>João Silva</td>
+                    <td>Centro</td>
+                    <td>Videira</td>
+                    <td>Rua das Flores, 125</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>100003</td>
+                    <td>100003003</td>
+                    <td class="tipo">Normal</td>
+                    <td>Maria Oliveira</td>
+                    <td>São Cristóvão</td>
+                    <td>Videira</td>
+                    <td>Av. Brasil, 450</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>100004</td>
+                    <td>100004004</td>
+                    <td class="tipo">Normal</td>
+                    <td>Maria Oliveira</td>
+                    <td>São Cristóvão</td>
+                    <td>Videira</td>
+                    <td>Av. Brasil, 450</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>100005</td>
+                    <td>100005005</td>
+                    <td class="tipo">Normal</td>
+                    <td>Carlos Souza</td>
+                    <td>Bela Vista</td>
+                    <td>Videira</td>
+                    <td>Rua Paraná, 80</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>100006</td>
+                    <td>100006006</td>
+                    <td class="tipo">Normal</td>
+                    <td>Ana Costa</td>
+                    <td>Centro</td>
+                    <td>Videira</td>
+                    <td>Rua XV de Novembro, 310</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>100007</td>
+                    <td>100007007</td>
+                    <td class="tipo">Normal</td>
+                    <td>Pedro Santos</td>
+                    <td>São José</td>
+                    <td>Videira</td>
+                    <td>Av. Presidente Vargas, 15</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>100008</td>
+                    <td>100008008</td>
+                    <td class="tipo">Normal</td>
+                    <td>Fernanda Lima</td>
+                    <td>Centro</td>
+                    <td>Videira</td>
+                    <td>Rua Minas Gerais, 220</td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td>100009</td>
+                    <td>100009009</td>
+                    <td class="tipo">Normal</td>
+                    <td>Ricardo Almeida</td>
+                    <td>Bela Vista</td>
+                    <td>Videira</td>
+                    <td>Rua São Paulo, 67</td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>100010</td>
+                    <td>100010010</td>
+                    <td class="tipo">Normal</td>
+                    <td>Juliana Pereira</td>
+                    <td>São Cristóvão</td>
+                    <td>Videira</td>
+                    <td>Av. Beira Rio, 900</td>
+                </tr>
+                <tr>
+                    <td>11</td>
+                    <td>100011</td>
+                    <td>100011011</td>
+                    <td class="tipo">Normal</td>
+                    <td>Marcos Ribeiro</td>
+                    <td>Centro</td>
+                    <td>Videira</td>
+                    <td>Rua Bahia, 44</td>
+                </tr>
+                <tr>
+                    <td>12</td>
+                    <td>100012</td>
+                    <td>100012012</td>
+                    <td class="tipo">Normal</td>
+                    <td>Camila Ferreira</td>
+                    <td>São José</td>
+                    <td>Videira</td>
+                    <td>Rua Rio Grande do Sul, 180</td>
+                </tr>
+                <tr>
+                    <td>13</td>
+                    <td>100013</td>
+                    <td>100013013</td>
+                    <td class="tipo">Normal</td>
+                    <td>Gustavo Nunes</td>
+                    <td>Bela Vista</td>
+                    <td>Videira</td>
+                    <td>Av. Independência, 550</td>
+                </tr>
+                <tr>
+                    <td>14</td>
+                    <td>100014</td>
+                    <td>100014014</td>
+                    <td class="tipo">Normal</td>
+                    <td>Patrícia Dias</td>
+                    <td>Centro</td>
+                    <td>Videira</td>
+                    <td>Rua Pernambuco, 312</td>
+                </tr>
+                <!-- Fraiburgo (14 pedidos) -->
+                <tr>
+                    <td>15</td>
+                    <td>100015</td>
+                    <td>100015015</td>
+                    <td class="tipo">Normal</td>
+                    <td>André Martins</td>
+                    <td>São Cristóvão</td>
+                    <td>Fraiburgo</td>
+                    <td>Rua Ceará, 78</td>
+                </tr>
+                <tr>
+                    <td>16</td>
+                    <td>100016</td>
+                    <td>100016016</td>
+                    <td class="tipo">Normal</td>
+                    <td>André Martins</td>
+                    <td>São Cristóvão</td>
+                    <td>Fraiburgo</td>
+                    <td>Rua Ceará, 78</td>
+                </tr>
+                <tr>
+                    <td>17</td>
+                    <td>100017</td>
+                    <td>100017017</td>
+                    <td class="tipo">Normal</td>
+                    <td>Beatriz Rocha</td>
+                    <td>São José</td>
+                    <td>Fraiburgo</td>
+                    <td>Av. Getúlio Vargas, 202</td>
+                </tr>
+                <tr>
+                    <td>18</td>
+                    <td>100018</td>
+                    <td>100018018</td>
+                    <td class="tipo">Normal</td>
+                    <td>Lucas Teixeira</td>
+                    <td>Bela Vista</td>
+                    <td>Fraiburgo</td>
+                    <td>Rua Goiás, 110</td>
+                </tr>
+                <tr>
+                    <td>19</td>
+                    <td>100019</td>
+                    <td>100019019</td>
+                    <td class="tipo">Normal</td>
+                    <td>Gabriela Monteiro</td>
+                    <td>Centro</td>
+                    <td>Fraiburgo</td>
+                    <td>Rua Paraná, 990</td>
+                </tr>
+                <tr>
+                    <td>20</td>
+                    <td>100020</td>
+                    <td>100020020</td>
+                    <td class="tipo">Normal</td>
+                    <td>Felipe Barros</td>
+                    <td>São Cristóvão</td>
+                    <td>Fraiburgo</td>
+                    <td>Av. das Nações, 15</td>
+                </tr>
+                <tr>
+                    <td>21</td>
+                    <td>100021</td>
+                    <td>100021021</td>
+                    <td class="tipo">Normal</td>
+                    <td>Larissa Cardoso</td>
+                    <td>São José</td>
+                    <td>Fraiburgo</td>
+                    <td>Rua Amazonas, 405</td>
+                </tr>
+                <tr>
+                    <td>22</td>
+                    <td>100022</td>
+                    <td>100022022</td>
+                    <td class="tipo">Normal</td>
+                    <td>Rodrigo Azevedo</td>
+                    <td>Bela Vista</td>
+                    <td>Fraiburgo</td>
+                    <td>Rua Rio de Janeiro, 66</td>
+                </tr>
+                <tr>
+                    <td>23</td>
+                    <td>100023</td>
+                    <td>100023023</td>
+                    <td class="tipo">Normal</td>
+                    <td>Simone Castro</td>
+                    <td>Centro</td>
+                    <td>Fraiburgo</td>
+                    <td>Av. Central, 777</td>
+                </tr>
+                <tr>
+                    <td>24</td>
+                    <td>100024</td>
+                    <td>100024024</td>
+                    <td class="tipo">Normal</td>
+                    <td>Ricardo Almeida</td>
+                    <td>Bela Vista</td>
+                    <td>Fraiburgo</td>
+                    <td>Rua São Paulo, 67</td>
+                </tr>
+                <tr>
+                    <td>25</td>
+                    <td>100025</td>
+                    <td>100025025</td>
+                    <td class="tipo">Normal</td>
+                    <td>Ricardo Almeida</td>
+                    <td>Bela Vista</td>
+                    <td>Fraiburgo</td>
+                    <td>Rua São Paulo, 67</td>
+                </tr>
+                <tr>
+                    <td>26</td>
+                    <td>100026</td>
+                    <td>100026026</td>
+                    <td class="tipo">Normal</td>
+                    <td>Juliana Pereira</td>
+                    <td>São Cristóvão</td>
+                    <td>Fraiburgo</td>
+                    <td>Av. Beira Rio, 900</td>
+                </tr>
+                <tr>
+                    <td>27</td>
+                    <td>100027</td>
+                    <td>100027027</td>
+                    <td class="tipo">Normal</td>
+                    <td>Juliana Pereira</td>
+                    <td>São Cristóvão</td>
+                    <td>Fraiburgo</td>
+                    <td>Av. Beira Rio, 900</td>
+                </tr>
+                <tr>
+                    <td>28</td>
+                    <td>100028</td>
+                    <td>100028028</td>
+                    <td class="tipo">Normal</td>
+                    <td>Fernanda Lima</td>
+                    <td>Centro</td>
+                    <td>Fraiburgo</td>
+                    <td>Rua Minas Gerais, 220</td>
+                </tr>
+                <!-- Monte Carlo (13 pedidos) -->
+                <tr>
+                    <td>29</td>
+                    <td>100029</td>
+                    <td>100029029</td>
+                    <td class="tipo">Normal</td>
+                    <td>Carlos Souza</td>
+                    <td>Bela Vista</td>
+                    <td>Monte Carlo</td>
+                    <td>Rua Paraná, 80</td>
+                </tr>
+                <tr>
+                    <td>30</td>
+                    <td>100030</td>
+                    <td>100030030</td>
+                    <td class="tipo">Normal</td>
+                    <td>Carlos Souza</td>
+                    <td>Bela Vista</td>
+                    <td>Monte Carlo</td>
+                    <td>Rua Paraná, 80</td>
+                </tr>
+                <tr>
+                    <td>31</td>
+                    <td>100031</td>
+                    <td>100031031</td>
+                    <td class="tipo">Normal</td>
+                    <td>Ana Costa</td>
+                    <td>Centro</td>
+                    <td>Monte Carlo</td>
+                    <td>Rua XV de Novembro, 310</td>
+                </tr>
+                <tr>
+                    <td>32</td>
+                    <td>100032</td>
+                    <td>100032032</td>
+                    <td class="tipo">Normal</td>
+                    <td>Pedro Santos</td>
+                    <td>São José</td>
+                    <td>Monte Carlo</td>
+                    <td>Av. Presidente Vargas, 15</td>
+                </tr>
+                <tr>
+                    <td>33</td>
+                    <td>100033</td>
+                    <td>100033033</td>
+                    <td class="tipo">Normal</td>
+                    <td>Marcos Ribeiro</td>
+                    <td>Centro</td>
+                    <td>Monte Carlo</td>
+                    <td>Rua Bahia, 44</td>
+                </tr>
+                <tr>
+                    <td>34</td>
+                    <td>100034</td>
+                    <td>100034034</td>
+                    <td class="tipo">Normal</td>
+                    <td>Camila Ferreira</td>
+                    <td>São José</td>
+                    <td>Monte Carlo</td>
+                    <td>Rua Rio Grande do Sul, 180</td>
+                </tr>
+                <tr>
+                    <td>35</td>
+                    <td>100035</td>
+                    <td>100035035</td>
+                    <td class="tipo">Normal</td>
+                    <td>Gustavo Nunes</td>
+                    <td>Bela Vista</td>
+                    <td>Monte Carlo</td>
+                    <td>Av. Independência, 550</td>
+                </tr>
+                <tr>
+                    <td>36</td>
+                    <td>100036</td>
+                    <td>100036036</td>
+                    <td class="tipo">Normal</td>
+                    <td>Patrícia Dias</td>
+                    <td>Centro</td>
+                    <td>Monte Carlo</td>
+                    <td>Rua Pernambuco, 312</td>
+                </tr>
+                <tr>
+                    <td>37</td>
+                    <td>100037</td>
+                    <td>100037037</td>
+                    <td class="tipo">Normal</td>
+                    <td>André Martins</td>
+                    <td>São Cristóvão</td>
+                    <td>Monte Carlo</td>
+                    <td>Rua Ceará, 78</td>
+                </tr>
+                <tr>
+                    <td>38</td>
+                    <td>100038</td>
+                    <td>100038038</td>
+                    <td class="tipo">Normal</td>
+                    <td>Beatriz Rocha</td>
+                    <td>São José</td>
+                    <td>Monte Carlo</td>
+                    <td>Av. Getúlio Vargas, 202</td>
+                </tr>
+                <tr>
+                    <td>39</td>
+                    <td>100039</td>
+                    <td>100039039</td>
+                    <td class="tipo">Normal</td>
+                    <td>Lucas Teixeira</td>
+                    <td>Bela Vista</td>
+                    <td>Monte Carlo</td>
+                    <td>Rua Goiás, 110</td>
+                </tr>
+                <tr>
+                    <td>40</td>
+                    <td>100040</td>
+                    <td>100040040</td>
+                    <td class="tipo">Normal</td>
+                    <td>Gabriela Monteiro</td>
+                    <td>Centro</td>
+                    <td>Monte Carlo</td>
+                    <td>Rua Paraná, 990</td>
+                </tr>
+                <tr>
+                    <td>41</td>
+                    <td>100041</td>
+                    <td>100041041</td>
+                    <td class="tipo">Normal</td>
+                    <td>Felipe Barros</td>
+                    <td>São Cristóvão</td>
+                    <td>Monte Carlo</td>
+                    <td>Av. das Nações, 15</td>
+                </tr>
+                <!-- Rio das Antas (13 pedidos) -->
+                <tr>
+                    <td>42</td>
+                    <td>100042</td>
+                    <td>100042042</td>
+                    <td class="tipo">Normal</td>
+                    <td>Larissa Cardoso</td>
+                    <td>São José</td>
+                    <td>Rio das Antas</td>
+                    <td>Rua Amazonas, 405</td>
+                </tr>
+                <tr>
+                    <td>43</td>
+                    <td>100043</td>
+                    <td>100043043</td>
+                    <td class="tipo">Normal</td>
+                    <td>Rodrigo Azevedo</td>
+                    <td>Bela Vista</td>
+                    <td>Rio das Antas</td>
+                    <td>Rua Rio de Janeiro, 66</td>
+                </tr>
+                <tr>
+                    <td>44</td>
+                    <td>100044</td>
+                    <td>100044044</td>
+                    <td class="tipo">Normal</td>
+                    <td>Simone Castro</td>
+                    <td>Centro</td>
+                    <td>Rio das Antas</td>
+                    <td>Av. Central, 777</td>
+                </tr>
+                <tr>
+                    <td>45</td>
+                    <td>100045</td>
+                    <td>100045045</td>
+                    <td class="tipo">Normal</td>
+                    <td>Simone Castro</td>
+                    <td>Centro</td>
+                    <td>Rio das Antas</td>
+                    <td>Av. Central, 777</td>
+                </tr>
+                <tr>
+                    <td>46</td>
+                    <td>100046</td>
+                    <td>100046046</td>
+                    <td class="tipo">Normal</td>
+                    <td>João Silva</td>
+                    <td>Centro</td>
+                    <td>Rio das Antas</td>
+                    <td>Rua das Flores, 125</td>
+                </tr>
+                <tr>
+                    <td>47</td>
+                    <td>100047</td>
+                    <td>100047047</td>
+                    <td class="tipo">Normal</td>
+                    <td>Maria Oliveira</td>
+                    <td>São Cristóvão</td>
+                    <td>Rio das Antas</td>
+                    <td>Av. Brasil, 450</td>
+                </tr>
+                <tr>
+                    <td>48</td>
+                    <td>100048</td>
+                    <td>100048048</td>
+                    <td class="tipo">Normal</td>
+                    <td>Fernanda Lima</td>
+                    <td>Centro</td>
+                    <td>Rio das Antas</td>
+                    <td>Rua Minas Gerais, 220</td>
+                </tr>
+                <tr>
+                    <td>49</td>
+                    <td>100049</td>
+                    <td>100049049</td>
+                    <td class="tipo">Normal</td>
+                    <td>Juliana Pereira</td>
+                    <td>São Cristóvão</td>
+                    <td>Rio das Antas</td>
+                    <td>Av. Beira Rio, 900</td>
+                </tr>
+                <tr>
+                    <td>50</td>
+                    <td>100050</td>
+                    <td>100050050</td>
+                    <td class="tipo">Normal</td>
+                    <td>Ricardo Almeida</td>
+                    <td>Bela Vista</td>
+                    <td>Rio das Antas</td>
+                    <td>Rua São Paulo, 67</td>
+                </tr>
+                <tr>
+                    <td>51</td>
+                    <td>100051</td>
+                    <td>100051051</td>
+                    <td class="tipo">Normal</td>
+                    <td>Ricardo Almeida</td>
+                    <td>Bela Vista</td>
+                    <td>Rio das Antas</td>
+                    <td>Rua São Paulo, 67</td>
+                </tr>
+                <tr>
+                    <td>52</td>
+                    <td>100052</td>
+                    <td>100052052</td>
+                    <td class="tipo">Normal</td>
+                    <td>Ana Costa</td>
+                    <td>Centro</td>
+                    <td>Rio das Antas</td>
+                    <td>Rua XV de Novembro, 310</td>
+                </tr>
+                <tr>
+                    <td>53</td>
+                    <td>100053</td>
+                    <td>100053053</td>
+                    <td class="tipo">Normal</td>
+                    <td>Pedro Santos</td>
+                    <td>São José</td>
+                    <td>Rio das Antas</td>
+                    <td>Av. Presidente Vargas, 15</td>
+                </tr>
+                <tr>
+                    <td>54</td>
+                    <td>100054</td>
+                    <td>100054054</td>
+                    <td class="tipo">Normal</td>
+                    <td>Carlos Souza</td>
+                    <td>Bela Vista</td>
+                    <td>Rio das Antas</td>
+                    <td>Rua Paraná, 80</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
