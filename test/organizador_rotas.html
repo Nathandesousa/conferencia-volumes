@@ -666,7 +666,7 @@
         '<div style="display:flex; justify-content:space-between; align-items:center;">' +
           '<strong>#' + p.numeroPedido + '</strong> - <span style="color:#444;">' + p.revendedor + '</span>' +
           '<span class="badge ' + tipo.cls + '">' + tipo.label + '</span>' +
-          '<button class="danger" style="padding:4px 8px; font-size:0.75rem;" onclick="removerPedido(' + p.id + ')">Remover</button>' +
+          '<button class="danger" style="width:auto; padding:4px 8px; font-size:0.75rem; min-height:auto;" onclick="removerPedido(' + p.id + ')">Remover</button>' +
         '</div>' +
         '<div class="meta">' +
           'NF: ' + (p.nf || '—') + ' | Cidade: ' + (p.cidade || '—') + ' | Bairro: ' + (p.bairro === 'Sem Bairro' ? '<em>Sem bairro</em>' : p.bairro) + ' | ' + (p.endereco || '—') +
