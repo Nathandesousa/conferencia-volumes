@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organizador de Rotas de Entrega</title>
+<meta name="theme-color" content="#1f3d3d">
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+  :root {
+    --primary: #1f3d3d;
+    --primary-light: #2c5656;
+    --primary-dark: #142b2b;
+    --accent: #2e7d76;
+    --accent-light: #3f9a91;
+    --gold: #e8b64c;
+    --bg: #eef2f2;
+    --card: #ffffff;
+    --text: #22333b;
+    --text-muted: #7a8a8a;
+    --success: #1f8a5f;
+    --success-bg: #e6f6ef;
+    --warn: #d98b2b;
+    --warn-bg: #fdf1e0;
+    --danger: #d64545;
+    --danger-bg: #fbeaea;
+  }
+  html, body {
+    height: 100%;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 1200px;
+    margin: 0 auto;
+    font-size: 16px;
+    padding: 20px 24px;
+  }
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+    position: relative;
+  }
+  .assinatura {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    font-size: 12px;
+    opacity: 0.6;
+    color: var(--text-muted);
+  }
+  .logo.no-print {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    object-fit: cover;
+    border: 3px solid rgba(31,61,61,0.35);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    margin: 0 auto 16px;
+    display: block;
+  }
+  h1.no-print {
+    text-align: center;
+    color: var(--primary);
+    margin: 24px 0 8px;
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  h2 {
+    font-size: 14px;
+    color: var(--primary);
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  input[type="text"], input[type="file"], select, textarea {
+    width: 100%;
+    padding: 13px;
+    border: 2px solid #d9e2e2;
+    border-radius: 10px;
+    font-size: 17px;
+    text-align: center;
+    background: #fbfdfd;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+  select {
+    appearance: none;
+    background-color: #fff;
+  }
+  button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(46,125,118,0.3);
+    margin-top: 10px;
+    min-height: 48px;
+  }
+  button:active { transform: scale(0.98); opacity: 0.92; }
+  button.secondary {
+    background: #e2e9e9;
+    color: var(--primary);
+    box-shadow: none;
+  }
+  button.secondary:hover { background: #d3dddd; }
+  button.secondary:active { background: #d3dddd; }
+  button.danger {
+    background: var(--danger);
+    box-shadow: 0 4px 12px rgba(214,69,69,0.3);
+  }
+  button.danger:hover { background: #c43a3a; }
+  button.print-btn {
+    background: var(--success);
+    box-shadow: 0 4px 12px rgba(31,138,95,0.3);
+  }
+  button.print-btn:hover { background: #1a7a50; }
+
+  .row { display: grid; gap: 10px; margin-bottom: 12px; }
+  @media (min-width: 600px) {
+    .row-2 { grid-template-columns: 1fr 1fr; }
+    .row-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .row-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  }
+
+  /* ---------- Lista de pedidos ---------- */
+  #pedidosLista {
+    border: 2px solid #eef2f2;
+    border-radius: 14px;
+    background: #f6f9f9;
+    padding: 10px;
+    margin-bottom: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .pedido-item {
+    display: grid;
+    gap: 4px;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+  }
+  .pedido-item:last-child { border-bottom: none; }
+  .pedido-item .meta { color: var(--text-muted); font-size: 12px; }
+  .badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    background: var(--danger);
+    color: #fff;
+    margin-left: 6px;
+  }
+  .badge.ok { background: var(--success); }
+  .badge.sem { background: var(--warn); }
+  .badge-normal { background: #e2e8f0; color: #000; }
+  .badge-comp { background: var(--warn-bg); color: var(--warn); border: 1px solid #f0d9b0; }
+  .badge-kit { background: var(--success-bg); color: var(--success); border: 1px solid #b5ddc2; }
+
+  /* ---------- Rota organizada ---------- */
+  #secaoRota {
+    display: block;
+  }
+  #rotaOrganizada {
+    min-height: 50px;
+  }
+  .cidade-bloco {
+    border: 2px solid #eef2f2;
+    border-radius: 14px;
+    margin-bottom: 16px;
+    background: #fff;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+  .cidade-header {
+    background: var(--primary);
+    color: #fff;
+    padding: 12px 16px;
+    font-weight: 900;
+    font-size: 1.25rem;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 5px solid var(--primary);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 3px 6px rgba(31,61,61,0.25);
+  }
+  .bairro-bloco {
+    border-top: 5px solid #000;
+    padding: 14px 16px;
+    background: #eef2f6;
+  }
+  .bairro-header {
+    font-weight: 900;
+    color: #000;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #000;
+    padding-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .bairro-header .contador { background: #e2e8f0; color: #475569; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; }
+  .sem-bairro { color: #000; font-weight: 800; font-style: italic; }
+
+  .pedido-card {
+    border: 2px solid #000;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    background: #fff;
+    page-break-inside: auto;
+    break-inside: auto;
+    font-size: 0.85rem;
+  }
+  .pedido-card .linha { margin: 3px 0; }
+  .pedido-card .rotulo { color: #000; font-weight: 800; font-size: 0.78rem; text-transform: uppercase; }
+  .pedido-card .valor { color: #000; font-weight: 600; }
+
+  .alerta-duplicado {
+    background: var(--warn-bg);
+    border: 4px solid #000;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    font-size: 1rem;
+    color: #000;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-transform: uppercase;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .bloco-duplicado {
+    border: 5px solid #000;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    background: #fffef0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .pedido-duplicado {
+    border: 3px solid #000 !important;
+    background: #fffbcc !important;
+    position: relative;
+  }
+  .pedido-duplicado::before {
+    content: "DUPLICADO";
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background: #000;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 900;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .no-print { display: block; }
+  .print-only { display: none; }
+
+  .msg-erro { color: var(--danger); background: var(--danger-bg); border: 1px solid var(--danger); padding: 8px; border-radius: 6px; margin-top: 10px; }
+  .msg-sucesso { color: var(--success); background: var(--success-bg); border: 1px solid var(--success); padding: 8px; border-radius: 6px; margin-top: 10px; }
+
+  /* ---------- Impressão compacta ---------- */
+  @media print {
+    body { background: #fff !important; padding: 0; margin: 0; color: #000; }
+    .container { max-width: 100%; padding: 0; }
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+    h1.no-print { margin-top: 0; }
+    .card { box-shadow: none; border: none; padding: 0; margin: 0 0 8px 0; background: #fff; border-radius: 0; }
+    .cidade-bloco { border: 1px solid #94a3b8; margin-bottom: 10px; page-break-inside: auto !important; break-inside: auto !important; border-radius: 0; }
+    .cidade-header { background: #000 !important; color: #fff !important; padding: 8px 12px; font-size: 13px; border-bottom: 5px solid #000 !important; border-radius: 0; }
+    .bairro-bloco { padding: 8px 12px; border-top: 5px solid #000 !important; background: #e2e8f0 !important; }
+    .pedido-card { border: 2px solid #000 !important; padding: 5px 8px; margin-bottom: 6px; font-size: 7.5px; background: #fff !important; page-break-inside: auto !important; break-inside: auto !important; }
+    .alerta-duplicado { background: #fde047 !important; border: 4px solid #000 !important; font-size: 8px; padding: 6px 10px; margin-bottom: 8px; color: #000 !important; font-weight: 900 !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+    .bloco-duplicado { border: 5px solid #000 !important; border-radius: 8px !important; padding: 8px 10px !important; margin-bottom: 12px !important; background: #fffef0 !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+    .pedido-duplicado { border: 3px solid #000 !important; background: #fffbcc !important; position: relative !important; }
+    .pedido-duplicado::before { content: "DUPLICADO"; position: absolute !important; top: -10px !important; left: 12px !important; background: #000 !important; color: #fff !important; font-size: 6px !important; font-weight: 900 !important; padding: 2px 6px !important; border-radius: 3px !important; text-transform: uppercase !important; }
+    .badge { font-size: 6px; padding: 1px 6px; border: 1px solid #000 !important; }
+    .bairro-header { font-size: 10px; margin-bottom: 6px; border-bottom: 3px solid #000 !important; padding-bottom: 3px; color: #000 !important; font-weight: 900 !important; }
+    .pedido-card .rotulo { font-size: 6px; }
+    .pedido-card .valor { font-size: 7px; }
+    @page { margin: 12mm; }
+  }
+  @media (max-width: 420px) {
+    body { font-size: 15px; padding-bottom: 20px; }
+    h1.no-print { font-size: 18px; }
+    .card { padding: 16px 14px; border-radius: 14px; }
+    input[type="text"], input[type="file"], select, textarea { padding: 12px; font-size: 16px; }
+    button { padding: 14px; font-size: 16px; }
+    .grid { gap: 5px; padding: 10px; min-height: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="assinatura">Made by Nathan</div>
+  <img src="../conferencia/nicosia.jpg" alt="Logo" class="logo no-print">
+<h1 class="no-print">🚚 Organizador de Rotas de Entrega</h1>
+
+  <!-- Passo 1: Importar romaneio -->
+  <section class="card no-print">
+    <h2>1. Importar Romaneio (arquivo HTML)</h2>
+    <p style="font-size:0.85rem; color:#555; margin:0 0 10px;">
+      Selecione o arquivo HTML do romaneio. O programa vai extrair automaticamente:
+      <strong>NF, Pedido, Revendedor, Bairro, Cidade e Endereço.</strong><br>
+      A rota será organizada automaticamente após a importação.
+    </p>
+    <input type="file" id="romaneioFile" accept=".html,.htm">
+    <button onclick="processarArquivo()">📂 Processar Arquivo Selecionado</button>
+    <div id="resultadoImportacao" style="margin-top:10px;"></div>
+  </section>
+
+  <!-- Passo 2: Adição manual -->
+  <section class="card no-print">
+    <h2>2. Adicionar Pedido Manualmente (COMP / KIT INICIAL)</h2>
+    <p style="font-size:0.85rem; color:#555; margin:0 0 10px;">
+      Use para pedidos que não aparecem no romaneio (complementos e kits iniciais).
+      <strong>Selecione um cliente da lista</strong> para preencher automaticamente os dados dele.
+    </p>
+    <form id="manualForm" onsubmit="adicionarManual(event)">
+      <div class="row row-4">
+        <div>
+          <label>Cliente existente</label>
+          <select id="clienteExistente" onchange="preencherClienteSelecionado()">
+            <option value="">-- escolher cliente --</option>
+          </select>
+        </div>
+        <div>
+          <label>NF (6 dígitos)</label>
+          <input type="text" id="mNf" maxlength="20" placeholder="Ex: 123456">
+        </div>
+        <div>
+          <label>Nº do Pedido (9 dígitos)</label>
+          <input type="text" id="mNumeroPedido" maxlength="20" placeholder="Ex: 123456789">
+        </div>
+        <div>
+          <label>Tipo</label>
+          <select id="mTipo">
+            <option value="comp">COMP (Complemento)</option>
+            <option value="kit">KIT INICIAL</option>
+            <option value="normal">Normal</option>
+          </select>
+        </div>
+      </div>
+      <div class="row row-3">
+        <div>
+          <label>Nome do Revendedor / Cliente</label>
+          <input type="text" id="mRevendedor" placeholder="Ex: João Silva">
+        </div>
+        <div>
+          <label>Bairro</label>
+          <input type="text" id="mBairro" placeholder="Ex: Centro">
+        </div>
+        <div>
+          <label>Cidade</label>
+          <input type="text" id="mCidade" placeholder="Ex: Videira">
+        </div>
+      </div>
+      <div class="row row-3">
+        <div>
+          <label>Endereço</label>
+          <input type="text" id="mEndereco" placeholder="Rua, número...">
+        </div>
+      </div>
+      <button type="submit">➕ Adicionar Pedido</button>
+    </form>
+  </section>
+
+  <!-- Passo 3: Lista de pedidos -->
+  <section class="card no-print">
+    <h2>3. Pedidos Carregados</h2>
+    <div id="pedidosLista">
+      <p style="color:#888; font-size:0.85rem;">Nenhum pedido carregado ainda.</p>
+    </div>
+    <div style="margin-top:10px; text-align:right;">
+      <button class="secondary" onclick="limparTudo()">🗑️ Limpar tudo</button>
+      <button class="secondary" onclick="gerarRota()">🔄 Atualizar rota organizada</button>
+    </div>
+  </section>
+
+  <!-- Passo 4: Rota organizada para imprimir -->
+  <section class="card" id="secaoRota">
+    <h2>4. Rota Organizada por Cidade e Bairro</h2>
+    <div class="no-print" style="text-align:center; margin-bottom:10px;">
+      <button class="print-btn" onclick="imprimirRota()">🖨️ Imprimir Rota</button>
+    </div>
+    <div id="rotaOrganizada">
+      <p style="color:#888; font-size:0.85rem;">A rota organizada aparecerá aqui após importar o romaneio.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+  let pedidos = [];
+
+  // ---------- Utilitários ----------
+  function limparValor(v) {
+    return (v || '').toString().trim();
+  }
+
+  function normalizarTipo(tipo) {
+    if (tipo === 'comp') return { label: 'COMP', cls: 'badge-comp' };
+    if (tipo === 'kit') return { label: 'KIT INICIAL', cls: 'badge-kit' };
+    return { label: 'Normal', cls: 'badge-normal' };
+  }
+
+  function normalizarCidade(cidade) {
+    if (!cidade) return 'sem cidade';
+    return cidade
+      .toString()
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function exibirCidade(cidade) {
+    if (!cidade) return 'Sem Cidade';
+    const c = cidade.trim();
+    return c.charAt(0).toUpperCase() + c.slice(1).toLowerCase();
+  }
+
+  function mostrarMensagem(elementoId, texto, tipo) {
+    const el = document.getElementById(elementoId);
+    if (!el) return;
+    el.innerHTML = '<div class="msg-' + tipo + '">' + texto + '</div>';
+  }
+
+  // ---------- Parser do romaneio HTML ----------
+  function extrairPedidosDoHTML(htmlString) {
+    const encontrados = [];
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlString, 'text/html');
+
+      const tabelas = doc.querySelectorAll('table');
+      tabelas.forEach(function(tabela) {
+        const linhas = tabela.querySelectorAll('tr');
+        if (linhas.length < 2) return;
+
+        const cabecalho = linhas[0];
+        const celulasCab = cabecalho.querySelectorAll('th, td');
+        const colunas = [];
+        celulasCab.forEach(function(cel) {
+          const texto = limparValor(cel.textContent).toLowerCase();
+          let chave = null;
+          if (texto.includes('nf') || texto.includes('nota')) chave = 'nf';
+          else if (texto.includes('pedido') || texto.includes('numero') || texto.includes('nº') || texto.includes('nro')) chave = 'numeroPedido';
+          else if (texto.includes('revendedor') || texto.includes('cliente') || texto.includes('nome')) chave = 'revendedor';
+          else if (texto.includes('bairro')) chave = 'bairro';
+          else if (texto.includes('cidade')) chave = 'cidade';
+          else if (texto.includes('endereço') || texto.includes('endereco') || texto.includes('logradouro')) chave = 'endereco';
+          colunas.push(chave);
+        });
+
+        for (var i = 1; i < linhas.length; i++) {
+          const celulas = linhas[i].querySelectorAll('td');
+          if (celulas.length === 0) continue;
+          const p = {};
+          colunas.forEach(function(chave, idx) {
+            if (chave && celulas[idx]) p[chave] = limparValor(celulas[idx].textContent);
+          });
+          if (p.revendedor || p.numeroPedido) {
+            p.tipo = 'normal';
+            p.manual = false;
+            p.id = Date.now() + Math.random();
+            p.cidade = p.cidade || 'Sem Cidade';
+            p.cidadeNormalizada = normalizarCidade(p.cidade);
+            encontrados.push(p);
+          }
+        }
+      });
+    } catch (e) {
+      console.error('Erro ao extrair pedidos:', e);
+    }
+    return encontrados;
+  }
+
+  // ---------- Dropdown de clientes ----------
+  function montarListaClientes() {
+    const clientesMap = new Map();
+    pedidos.forEach(function(p) {
+      const chave = (p.revendedor || '').trim();
+      if (!chave) return;
+      if (!clientesMap.has(chave)) {
+        clientesMap.set(chave, {
+          revendedor: p.revendedor,
+          bairro: p.bairro || '',
+          cidade: p.cidade || '',
+          endereco: p.endereco || ''
+        });
+      }
+    });
+    return Array.from(clientesMap.values()).sort(function(a, b) {
+      return a.revendedor.localeCompare(b.revendedor, 'pt-BR');
+    });
+  }
+
+  function atualizarDropdownClientes() {
+    const select = document.getElementById('clienteExistente');
+    if (!select) return;
+    const clientes = montarListaClientes();
+    select.innerHTML = '<option value="">-- escolher cliente --</option>';
+    clientes.forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c.revendedor;
+      opt.textContent = c.revendedor;
+      opt.dataset.bairro = c.bairro;
+      opt.dataset.cidade = c.cidade;
+      opt.dataset.endereco = c.endereco;
+      select.appendChild(opt);
+    });
+  }
+
+  function preencherClienteSelecionado() {
+    const select = document.getElementById('clienteExistente');
+    if (!select) return;
+    var opt = select.options[select.selectedIndex];
+    if (!opt || !opt.value) return;
+    document.getElementById('mRevendedor').value = opt.textContent;
+    document.getElementById('mBairro').value = opt.dataset.bairro || '';
+    document.getElementById('mCidade').value = opt.dataset.cidade || '';
+    document.getElementById('mEndereco').value = opt.dataset.endereco || '';
+  }
+
+  // ---------- Importar arquivo ----------
+  function processarArquivo() {
+    var input = document.getElementById('romaneioFile');
+    if (!input || !input.files || input.files.length === 0) {
+      mostrarMensagem('resultadoImportacao', 'Selecione um arquivo primeiro.', 'erro');
+      return;
+    }
+    var arquivo = input.files[0];
+    var leitor = new FileReader();
+    leitor.onload = function(e) {
+      try {
+        var novos = extrairPedidosDoHTML(e.target.result);
+        if (!novos || novos.length === 0) {
+          mostrarMensagem('resultadoImportacao', '⚠ Não foi possível extrair pedidos automaticamente. Adicione manualmente no passo 2.', 'erro');
+          return;
+        }
+        novos.forEach(function(n) {
+          var jaExiste = pedidos.find(function(p) {
+            return p.numeroPedido === n.numeroPedido && p.revendedor === n.revendedor;
+          });
+          if (!jaExiste) pedidos.push(n);
+        });
+        mostrarMensagem('resultadoImportacao', '✓ ' + novos.length + ' pedido(s) importado(s) com sucesso.', 'sucesso');
+        atualizarDropdownClientes();
+        renderizarListaPedidos();
+        gerarRota();
+      } catch (err) {
+        console.error(err);
+        mostrarMensagem('resultadoImportacao', 'Erro ao processar arquivo: ' + err.message, 'erro');
+      }
+    };
+    leitor.onerror = function() {
+      mostrarMensagem('resultadoImportacao', 'Erro ao ler o arquivo.', 'erro');
+    };
+    leitor.readAsText(arquivo);
+  }
+
+  // ---------- Adição manual ----------
+  function adicionarManual(e) {
+    e.preventDefault();
+    var cidadeRaw = limparValor(document.getElementById('mCidade').value);
+    var p = {
+      id: Date.now() + Math.random(),
+      nf: limparValor(document.getElementById('mNf').value),
+      numeroPedido: limparValor(document.getElementById('mNumeroPedido').value),
+      revendedor: limparValor(document.getElementById('mRevendedor').value),
+      bairro: limparValor(document.getElementById('mBairro').value) || 'Sem Bairro',
+      cidade: cidadeRaw || 'Sem Cidade',
+      cidadeNormalizada: normalizarCidade(cidadeRaw),
+      endereco: limparValor(document.getElementById('mEndereco').value),
+      tipo: document.getElementById('mTipo').value,
+      manual: true
+    };
+    pedidos.push(p);
+    document.getElementById('manualForm').reset();
+    atualizarDropdownClientes();
+    renderizarListaPedidos();
+    gerarRota();
+  }
+
+  function removerPedido(id) {
+    pedidos = pedidos.filter(function(p) { return p.id !== id; });
+    atualizarDropdownClientes();
+    renderizarListaPedidos();
+    gerarRota();
+  }
+
+  function limparTudo() {
+    if (!confirm('Tem certeza que deseja limpar todos os pedidos?')) return;
+    pedidos = [];
+    if (document.getElementById('romaneioFile')) document.getElementById('romaneioFile').value = '';
+    mostrarMensagem('resultadoImportacao', '');
+    atualizarDropdownClientes();
+    renderizarListaPedidos();
+    document.getElementById('rotaOrganizada').innerHTML = '<p style="color:#888; font-size:0.85rem;">Nenhum pedido carregado.</p>';
+  }
+
+  // ---------- Render lista de pedidos ----------
+  function renderizarListaPedidos() {
+    var container = document.getElementById('pedidosLista');
+    if (!container) return;
+    if (!pedidos || pedidos.length === 0) {
+      container.innerHTML = '<p style="color:#888; font-size:0.85rem;">Nenhum pedido carregado ainda.</p>';
+      return;
+    }
+    var html = '';
+    pedidos.forEach(function(p) {
+      var tipo = normalizarTipo(p.tipo);
+      html += '<div class="pedido-item">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<strong>#' + p.numeroPedido + '</strong> - <span style="color:#444;">' + p.revendedor + '</span>' +
+          '<span class="badge ' + tipo.cls + '">' + tipo.label + '</span>' +
+          '<button class="danger" style="padding:4px 8px; font-size:0.75rem;" onclick="removerPedido(' + p.id + ')">Remover</button>' +
+        '</div>' +
+        '<div class="meta">' +
+          'NF: ' + (p.nf || '—') + ' | Cidade: ' + (p.cidade || '—') + ' | Bairro: ' + (p.bairro === 'Sem Bairro' ? '<em>Sem bairro</em>' : p.bairro) + ' | ' + (p.endereco || '—') +
+          (p.manual ? ' <span style="color:#dc3545; font-weight:700;">[Manual]</span>' : '') +
+        '</div>' +
+      '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  // ---------- Gerar rota organizada ----------
+  function gerarRota() {
+    try {
+      if (!pedidos || pedidos.length === 0) {
+        document.getElementById('rotaOrganizada').innerHTML = '<p style="color:#888; font-size:0.85rem;">Nenhum pedido carregado.</p>';
+        return;
+      }
+
+      var contagemRevendedorCidade = {};
+      pedidos.forEach(function(p) {
+        var cidadeKey = p.cidadeNormalizada || normalizarCidade(p.cidade) || 'sem cidade';
+        var chave = cidadeKey + '|' + (p.revendedor || '').trim().toLowerCase();
+        contagemRevendedorCidade[chave] = (contagemRevendedorCidade[chave] || 0) + 1;
+      });
+
+      var porCidade = new Map();
+      pedidos.forEach(function(p) {
+        var cidadeKey = p.cidadeNormalizada || normalizarCidade(p.cidade) || 'sem cidade';
+        var cidadeExibir = p.cidade || 'Sem Cidade';
+        if (!porCidade.has(cidadeKey)) porCidade.set(cidadeKey, { nome: cidadeExibir, bairros: new Map() });
+        var entrada = porCidade.get(cidadeKey);
+        var bairro = p.bairro || 'Sem Bairro';
+        if (!entrada.bairros.has(bairro)) entrada.bairros.set(bairro, []);
+        entrada.bairros.get(bairro).push(p);
+      });
+
+      var cidadesOrdenadas = Array.from(porCidade.entries()).sort(function(a, b) {
+        return a[1].nome.localeCompare(b[1].nome, 'pt-BR');
+      });
+
+      var html = '';
+      cidadesOrdenadas.forEach(function(entry) {
+        var cidadeKey = entry[0];
+        var entrada = entry[1];
+        var cidade = entrada.nome;
+        var mapaBairro = entrada.bairros;
+        var bairrosOrdenados = Array.from(mapaBairro.keys()).sort(function(a, b) {
+          if (a === 'Sem Bairro') return 1;
+          if (b === 'Sem Bairro') return -1;
+          return a.localeCompare(b, 'pt-BR');
+        });
+
+        var totalCidade = 0;
+        bairrosOrdenados.forEach(function(bairro) { totalCidade += mapaBairro.get(bairro).length; });
+
+        html += '<div class="cidade-bloco">' +
+          '<div class="cidade-header">' + cidade.toUpperCase() + ' <span style="font-weight:400; font-size:0.8rem; opacity:0.9;">(' + totalCidade + ' pedido(s))</span></div>';
+
+        bairrosOrdenados.forEach(function(bairro) {
+          var lista = mapaBairro.get(bairro);
+
+          var porRevendedor = new Map();
+          lista.forEach(function(p) {
+            if (!porRevendedor.has(p.revendedor)) porRevendedor.set(p.revendedor, []);
+            porRevendedor.get(p.revendedor).push(p);
+          });
+
+          html += '<div class="bairro-bloco">' +
+            '<div class="bairro-header">' +
+            (bairro === 'Sem Bairro' ? '<span class="sem-bairro">Sem Bairro</span>' : bairro.toUpperCase()) +
+            '<span class="contador">' + lista.length + '</span>' +
+            '</div>';
+
+          porRevendedor.forEach(function(grupo, revendedor) {
+            var chave = cidadeKey + '|' + (revendedor || '').trim().toLowerCase();
+            var duplicado = contagemRevendedorCidade[chave] > 1;
+
+            if (duplicado && grupo.length > 1) {
+              html += '<div class="bloco-duplicado">' +
+                '<div class="alerta-duplicado">' +
+                '⚠ Atenção: ' + grupo.length + ' pedidos para este revendedor' +
+                '</div>';
+            }
+
+            grupo.forEach(function(p) {
+              var tipo = normalizarTipo(p.tipo);
+              var classeDuplicado = duplicado ? 'pedido-duplicado' : '';
+              html += '<div class="pedido-card ' + classeDuplicado + '">' +
+                '<div class="linha"><span class="rotulo">NF:</span> <span class="valor">' + (p.nf || '—') + '</span></div>' +
+                '<div class="linha"><span class="rotulo">Pedido:</span> <span class="valor">#' + (p.numeroPedido || '—') + '</span></div>' +
+                '<div class="linha"><span class="rotulo">Revendedor:</span> <span class="valor">' + (p.revendedor || '—') + '</span></div>' +
+                '<div class="linha"><span class="rotulo">Endereço:</span> <span class="valor">' + (p.endereco || '—') + '</span></div>' +
+                '<div class="linha" style="margin-top:4px;">' +
+                  '<span class="badge ' + tipo.cls + '">' + tipo.label + '</span>' +
+                  (p.manual ? ' <span style="font-size:0.7rem; color:#666;">[Manual]</span>' : '') +
+                '</div>' +
+              '</div>';
+            });
+
+            if (duplicado && grupo.length > 1) {
+              html += '</div>';
+            }
+          });
+
+          html += '</div>';
+        });
+
+        html += '</div>';
+      });
+
+      document.getElementById('rotaOrganizada').innerHTML = html;
+    } catch (err) {
+      console.error('Erro ao gerar rota:', err);
+      document.getElementById('rotaOrganizada').innerHTML = '<div class="msg-erro">Erro ao gerar rota: ' + err.message + '</div>';
+    }
+  }
+
+  // ---------- Imprimir ----------
+  function imprimirRota() {
+    if (!pedidos || pedidos.length === 0) {
+      alert('Não há pedidos organizados para imprimir.');
+      return;
+    }
+    gerarRota();
+    window.print();
+  }
+
+  // Inicial
+  renderizarListaPedidos();
+</script>
+
+</body>
+</html>
