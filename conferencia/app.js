@@ -11,7 +11,7 @@ var state = {
     wakeLock: null,
     emAndamento: false,
     dupPendente: null,    // "nota:vol"
-    confirmaPendente: null    // "nota:vol" aguardando confirmacao do toque
+    confirmaPendente: null    // "nota:vol" aguardando confirmação do toque
 };
 
 /* Identificador unico de um volume: "nota:vol", ex: "2:3" = Nota 2, Vol 3 */
@@ -206,7 +206,7 @@ $('btnIniciar').addEventListener('click', iniciar);
 
 function iniciar() {
     if (state.emAndamento) {
-        if (!confirmar('Ja existe uma conferencia em andamento. Iniciar nova e descartar a atual?')) return;
+        if (!confirmar('Já existe uma conferência em andamento. Iniciar nova e descartar a atual?')) return;
     }
     var camposNota = document.querySelectorAll('#notasLista input');
     if (!camposNota.length) { alert('Informe a quantidade de notas'); return; }
@@ -356,7 +356,7 @@ function atualizarAvisoExcesso() {
     if (!el) return;
     var ex = excessoCaixas();
     if (ex === 0) { el.classList.add('hidden'); return; }
-    el.innerHTML = 'Atencao: tem <strong>' + ex + '</strong> caixa(s) a mais! (nada faltando para cobrir)';
+    el.innerHTML = 'Atenção: tem <strong>' + ex + '</strong> caixa(s) a mais! (nada faltando para cobrir)';
     el.classList.remove('hidden');
 }
 function mostrarFeedback(msg, tipo) {
@@ -377,7 +377,7 @@ function formatarDataHora(d) {
 /* ===== Registro de volume (por nota) ===== */
 function registrar(nota, vol, isDupConfirm) {
     if (nota < 1 || nota > state.notas.length || vol < 1 || vol > state.notas[nota - 1]) {
-        mostrarFeedback('Volume invalido', 'err'); somErro(); return;
+        mostrarFeedback('Volume inválido', 'err'); somErro(); return;
     }
     var k = chave(nota, vol);
     if (state.registrados[k]) {
@@ -459,7 +459,7 @@ $('btnModalConfirm').addEventListener('click', function () {
 /* ===== Volume repetido (modal) ===== */
 function abrirModalDup(nota, vol) {
     state.dupPendente = chave(nota, vol);
-    $('modalDupMsg').textContent = 'O volume ' + vol + ' da Nota ' + nota + ' ja foi registrado. Registrar como repetido (duplicado)?';
+    $('modalDupMsg').textContent = 'O volume ' + vol + ' da Nota ' + nota + ' já foi registrado. Registrar como repetido (duplicado)?';
     $('modalDup').classList.add('active');
     somDup();
 }
@@ -524,7 +524,7 @@ function removerVolume(nota, vol) {
 /* ===== Voltar setup ===== */
 $('btnVoltar').addEventListener('click', function () {
     if (state.emAndamento) {
-        if (!confirmar('Sair da conferencia? Os volumes ainda nao registrados serao perdidos.')) return;
+        if (!confirmar('Sair da conferência? Os volumes ainda não registrados serão perdidos.')) return;
     }
     soltarWakeLock();
     state.emAndamento = false;
@@ -564,7 +564,7 @@ function finishConfirmation() {
     }
     var faltaReal = faltantesReais();
 
-    $('reportNf').textContent = 'Conferencia de ' + formatarDataHora(new Date());
+    $('reportNf').textContent = 'Conferência de ' + formatarDataHora(new Date());
     $('reportSummary').innerHTML = faltaReal === 0
         ? '<strong>Sucesso!</strong><br>Todos os <strong>' + state.total + '</strong> volumes conferidos (' + state.semEtiqueta + ' sem etiqueta).'
         : 'Registrados: <strong>' + ok + '</strong> de ' + state.total + '<br>Faltando: <strong style="color:#d64545">' + faltaReal + '</strong> volumes<br>Sem etiqueta: <strong>' + state.semEtiqueta + '</strong><br>Repetidos: <strong>' + state.duplicados.length + '</strong>';
@@ -629,13 +629,13 @@ function reportSemAvisoFill() {
         return;
     }
     if (sem > faltantes.length) {
-        el.innerHTML = '<strong>' + sem + '</strong> caixas sem etiqueta: nao da para deduzir quais sao (mais sem etiqueta que volumes faltando).';
+        el.innerHTML = '<strong>' + sem + '</strong> caixas sem etiqueta: não dá para deduzir quais são (mais sem etiqueta que volumes faltando).';
         return;
     }
     if (sem === 1) {
-        el.innerHTML = 'A caixa sem etiqueta e <strong>' + rotulos[0] + '</strong>.';
+        el.innerHTML = 'A caixa sem etiqueta é <strong>' + rotulos[0] + '</strong>.';
     } else {
-        el.innerHTML = 'As <strong>' + sem + '</strong> caixas sem etiqueta podem ser: <strong>' + rotulos.join(', ') + '</strong> (nao da para dizer qual e qual).';
+        el.innerHTML = 'As <strong>' + sem + '</strong> caixas sem etiqueta podem ser: <strong>' + rotulos.join(', ') + '</strong> (não dá para dizer qual é qual).';
     }
 }
 
@@ -659,7 +659,7 @@ function reportExcessoFill() {
     var ex = excessoCaixas();
     if (ex === 0) { el.style.display = 'none'; return; }
     el.style.display = '';
-    el.innerHTML = 'Atencao: <strong>' + ex + '</strong> caixa(s) a mais foram recebidas (nao ha volume faltando para cobrir). Verifique se nao veio caixa trocada ou de outra nota.';
+    el.innerHTML = 'Atenção: <strong>' + ex + '</strong> caixa(s) a mais foram recebidas (não há volume faltando para cobrir). Verifique se não veio caixa trocada ou de outra nota.';
 }
 
 function montarFalta() {
@@ -750,7 +750,7 @@ function salvarNoHistorico() {
     hist.unshift(item);
     localStorage.setItem(HIST_KEY, JSON.stringify(hist));
     somConfirma();
-    alert('Conferencia salva no historico!');
+    alert('Conferência salva no histórico!');
 }
 
 $('btnSalvarHist').addEventListener('click', salvarNoHistorico);
@@ -769,7 +769,7 @@ function renderHistorico() {
     var list = $('histList');
     list.innerHTML = '';
     if (!hist.length) {
-        list.innerHTML = '<div class="empty-state">Nenhuma conferencia salva ainda.</div>';
+        list.innerHTML = '<div class="empty-state">Nenhuma conferência salva ainda.</div>';
         return;
     }
     for (var i = 0; i < hist.length; i++) {

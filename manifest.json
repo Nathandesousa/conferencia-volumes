@@ -7,6 +7,6 @@
   "background_color": "#eef2f2",
   "theme_color": "#1f3d3d",
   "icons": [
-    { "src": "nicosia.jpg", "sizes": "225x225", "type": "image/jpeg" }
+    { "src": "logicore.jpg", "sizes": "225x225", "type": "image/jpeg" }
   ]
 }
